@@ -20,7 +20,7 @@
   <build_depend>std_msgs</build_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <exec_depend>std_msgs</exec_depend>
-  <run_depend>rospack</run_depend>
+  <exec_depend>rospack</exec_depend>
 
   <export></export>
 </package>

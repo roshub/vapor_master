@@ -4,7 +4,7 @@ if ! [ -z $SNAP ];
 then
     node $SNAP/node_modules/vapor-master/index.js;
 else
-    VAPOR_MASTER_ROS_PKG_PATH=`rospack find rosmaster`
+    VAPOR_MASTER_ROS_PKG_PATH=`rospack find vapor_master`
     if [ -z $VAPOR_MASTER_ROS_PKG_PATH ];
     then 
         node ../index.js

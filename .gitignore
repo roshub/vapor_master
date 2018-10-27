@@ -10,3 +10,5 @@ stage/*
 .snapcraft
 *.snap
 snap/plugins/__pycache__/*
+debian/
+obj-*/
