@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if ! [ -z $SNAP ];
+then
+    node $SNAP/node_modules/vapor-master/index.js;
+else
+    VAPOR_MASTER_ROS_PKG_PATH=`rospack find rosmaster`
+    if [ -z $VAPOR_MASTER_ROS_PKG_PATH ];
+    then 
+        node ../index.js
+    else
+        node $VAPOR_MASTER_ROS_PKG_PATH/index.js
+    fi
+fi

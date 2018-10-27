@@ -1,0 +1,19 @@
+name: vapor-master
+version: '0.1'
+grade: stable
+confinement: strict
+summary: RosHub Vapor Master
+description: RosHub Vapor Master
+
+apps:
+  vapor-master:
+    command: vapor-master
+    plugs: [network, network-bind ,network-manager,network-control]
+    daemon: simple
+
+parts:
+  vapor-master:
+    source: .
+    plugin: nodejs
+    node-engine: "8.11.0"
+    node-package-manager: "yarn"

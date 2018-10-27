@@ -1,0 +1,12 @@
+/node_modules
+yarn.lock
+package.lock
+.env
+yarn-error.log
+package-lock.json
+parts/*
+prime/*
+stage/*
+.snapcraft
+*.snap
+snap/plugins/__pycache__/*

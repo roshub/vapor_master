@@ -1,0 +1,7 @@
+<launch>
+  <group ns="/">
+    <param name="rosdistro" command="rosversion -d" />
+    <param name="rosversion" command="rosversion roslaunch" />
+    <node pkg="rosout" type="rosout" name="rosout" respawn="true"/>
+  </group>
+</launch>

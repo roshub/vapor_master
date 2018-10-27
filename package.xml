@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vapor_master</name>
+  <version>0.0.1</version>
+  <description>ephemeral ros master node for cloudscale deployment</description>
+
+  <maintainer email="philetus@roshub.io">michael philetus weller</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>Apache2.0</license>
+
+  <!-- <url type="website">http://wiki.ros.org/vapor_master</url> -->
+
+  <author email="philetus@roshub.io">Michael Philetus Weller</author>
+
+  <!--   <doc_depend>doxygen</doc_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <run_depend>rospack</run_depend>
+
+  <export></export>
+</package>

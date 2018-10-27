@@ -1,0 +1,38 @@
+{
+  "name": "vapor-master",
+  "version": "0.1.0",
+  "main": "./index.js",
+  "directories": {
+    "js": "js"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/eslint ./",
+    "start": "node ./index.js",
+    "watch": "DEBUG=roshub.*,-roshub_crypto.*,-roshub.model.* nodemon index.js"
+  },
+  "bin": {
+    "vapor-master": "bin/vapor-master"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:roshub/vapor_master.git"
+  },
+  "author": "michael philetus weller <philetus@roshub.io>",
+  "license": "Apache2.0",
+  "dependencies": {
+    "bossy": "^4.0.1",
+    "debug": "^3.1.0",
+    "express": "^4.16.2",
+    "express-xmlrpc": "philetus/express-xmlrpc#multicall",
+    "mkdirp": "^0.5.1",
+    "mongoose": "5.2.7",
+    "mongoose-schema-jsonschema": "^1.1.15",
+    "morgan": "^1.9.0",
+    "nconf": "^0.10.0",
+    "nodemon": "^1.18.4",
+    "rimraf": "^2.6.2",
+    "sanitize-filename": "^1.6.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {}
+}
