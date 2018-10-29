@@ -26,24 +26,29 @@ const path = require('path')
  */
 
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+var nodeExternals = require('webpack-node-externals');
 
-
-
+var options = {
+  whitelist : ["express-xmlrpc"]
+}
 
 module.exports = {
-  target: 'node',
+
+  externals:[nodeExternals(options)],
   module: {
     rules: [{
-      include: [path.resolve(__dirname, 'src')],
+      
+      include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules/express-xmlrpc')],
       loader: 'babel-loader',
 
       options: {
         plugins: ['syntax-dynamic-import'],
 
         presets: [['@babel/preset-env', {
-		  'targets': {
-			"node": "4.0.0"
-		}
+          'modules': false,
+          'targets': {
+            node: "4.2.6"
+          }
         }]]
       },
 
@@ -54,12 +59,13 @@ module.exports = {
   entry: "./index.js",
 
   output: {
-    filename: '[name].[chunkhash].js',
+    filename: 'vapor_master.js',
     path: path.resolve(__dirname, 'dist')
   },
 
   mode: 'development',
-
+  target: 'node',
+  
   optimization: {
     splitChunks: {
       cacheGroups: {

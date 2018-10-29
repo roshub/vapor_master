@@ -1,5 +1,5 @@
 'use strict'
-
+require("@babel/polyfill")
 const xmlrpc = require('express-xmlrpc')
 const express = require('express')
 const morgan = require('morgan')

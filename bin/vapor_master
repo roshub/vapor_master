@@ -7,8 +7,8 @@ else
     VAPOR_MASTER_ROS_PKG_PATH=`rospack find vapor_master`
     if [ -z $VAPOR_MASTER_ROS_PKG_PATH ];
     then 
-        node ../index.js
+        node ../dist/vapor_master.js
     else
-        node $VAPOR_MASTER_ROS_PKG_PATH/index.js
+        node $VAPOR_MASTER_ROS_PKG_PATH/dist/vapor_master.js
     fi
 fi

@@ -13,5 +13,5 @@ snap/plugins/__pycache__/*
 debian/
 obj-*/
 .DS_Store
-dist/*
+dist/
 .yo-rc.json

@@ -3,12 +3,13 @@
 const path = require('path');
 const mongoose = require('mongoose')
 
-let exposed = {}
-
-require("fs").readdirSync(__dirname).forEach( (file)=>{
-  if(file == path.basename(__filename)){return}
-  let title = file.replace('.js', '')
-  exposed[title] = mongoose.model('vapor_'+title, require('./'+title))
-});
+let exposed = {
+  param : mongoose.model('vapor_param', require('./param')),
+  paramSub : mongoose.model('vapor_paramSub', require('./paramSub')),
+  rosnode : mongoose.model('vapor_rosnode', require('./rosnode')),
+  servicePro : mongoose.model('vapor_servicePro', require('./servicePro')),
+  topic : mongoose.model('vapor_topic', require('./topic')),
+  topicXub : mongoose.model('vapor_topicXub', require('./topicXub'))
+}
 
 module.exports = exposed

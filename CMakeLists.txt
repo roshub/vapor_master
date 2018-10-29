@@ -12,7 +12,11 @@ catkin_package(
   DEPENDS nodejs
 )
 
-execute_process(COMMAND yarn --cwd ${CMAKE_CURRENT_SOURCE_DIR} install)
+execute_process(COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/node_modules ${CMAKE_CURRENT_SOURCE_DIR}/dist )
+execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} install)
+execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} run build)
+execute_process(COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/node_modules )
+execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} --production install)
 
 install(PROGRAMS bin/vapor_master
         DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
@@ -22,12 +26,8 @@ install(PROGRAMS package.json
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(PROGRAMS index.js
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-
-install(DIRECTORY src/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/src
+install(DIRECTORY dist/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/dist
 )
 
 install(DIRECTORY launch/

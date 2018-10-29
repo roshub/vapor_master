@@ -17,10 +17,13 @@
 
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>nodejs</buildtool_depend>
+  <buildtool_depend>npm</buildtool_depend>
   <build_depend>std_msgs</build_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>rospack</exec_depend>
+  <exec_depend>nodejs</exec_depend>
 
   <export></export>
 </package>
