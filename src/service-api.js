@@ -3,6 +3,7 @@
 const xmlrpc = require('express-xmlrpc')
 const coreUtil = require('./core-util.js')
 const serviceUtil = require('./service-util.js')
+const debug = require('debug') ('vapor-master:service-api')
 
 // registerService(caller_id, service, service_api, caller_api)
 //   -> (code, statusMessage, ignore)

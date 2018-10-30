@@ -1,6 +1,7 @@
 'use strict'
 
 const db = require('./model-interface.js')
+const debug = require('debug') ('vapor-master:service-util')
 
 // remove all service provider docs & resolve to # removed
 exports.clean = async () => {

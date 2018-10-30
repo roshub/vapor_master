@@ -2,6 +2,7 @@
 
 const xmlrpc = require('express-xmlrpc')
 const coreUtil = require('./core-util')
+const debug = require('debug') ('vapor-master:update-util')
 
 // make xmlrpc publisherUpdate call to subscriber uri
 exports.updateTopicSub = (subUri, topicPath, pubUris) => {
@@ -24,7 +25,7 @@ exports.updateTopicSub = (subUri, topicPath, pubUris) => {
           subUri, `on topic update subscriber responded: '${value[1]}'`)
       }
 
-      console.log(`updated sub '${subUri}' to topic '${topicPath}'`)
+      debug(`updated sub '${subUri}' to topic '${topicPath}'`)
 
       // log successful touch to track rosnode lifecycle
       return coreUtil.logTouch(null, subUri, '0.0.0.0') // TODO -> get node ip
@@ -53,7 +54,7 @@ exports.updateParamSub = (subUri, keyPath, value) => {
           subUri, `on param update subscriber responded: '${value[1]}'`)
       }
 
-      console.log(`updated subscriber '${subUri}' to param '${keyPath}'`)
+      debug(`updated subscriber '${subUri}' to param '${keyPath}'`)
 
       // log successful touch to track rosnode lifecycle
       return coreUtil.logTouch(null, subUri, '0.0.0.0') // TODO -> get node ip

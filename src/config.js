@@ -9,7 +9,7 @@ const mkdirp = require('mkdirp')
 const rimraf = require('rimraf')
 const sanitize = require('sanitize-filename')
 
-const logger = require('debug')('roshub.config');
+const logger = require('debug')('vapor-master:config');
 
 
 var BASE_PATH = process.env.SNAP_COMMON || ((process.env.HOME) ? (process.env.HOME + '/.vapor-master') : '.' )

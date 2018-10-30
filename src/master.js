@@ -3,6 +3,7 @@
 const URL = require('url-parse')
 const xmlrpc = require('express-xmlrpc')
 const coreUtil = require('./core-util.js')
+const debug = require('debug')('vapor-master:master')
 
 // singleton ros master server express router
 const master = {}

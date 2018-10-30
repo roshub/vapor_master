@@ -4,6 +4,7 @@ const db = require('./model-interface.js')
 const serviceUtil = require('./service-util.js')
 const topicUtil = require('./topic-util.js')
 const paramUtil = require('./param-util.js')
+const debug = require('debug')('vapor-master:core-util')
 
 exports.clean = async () => {
   const counts = await Promise.all([
@@ -80,7 +81,7 @@ exports.getByPathOrUri = async (path, uri) => {
 // log method call to vapor master by a rosnode
 // if there is no record of rosnode with given path create it
 exports.logTouch = async (path, uri, ipv4) => {
-  console.log(`touched rosnode with path '${path}' from ip '${ipv4}'`)
+  debug(`touched rosnode with path '${path}' from ip '${ipv4}'`)
 
   if (!(path || uri)) {
     throw new Error('need either path or uri to log touch!')

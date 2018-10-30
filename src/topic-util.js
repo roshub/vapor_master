@@ -2,6 +2,7 @@
 
 const db = require('./model-interface.js')
 const updateUtil = require('./update-util')
+const debug = require('debug') ('vapor-master:topic-util')
 
 // build regex to match given root subpath
 exports.subpathRegEx = (subpath) => {
@@ -43,7 +44,7 @@ exports.clean = async () => {
 // log method call to vapor master touching a topic
 // if there is no record of topic with given path create it
 exports.logTouch = async (topicPath, topicType, ipv4) => {
-  console.log(`topic at path '${topicPath}' touched from ip '${ipv4}'`)
+  debug(`topic at path '${topicPath}' touched from ip '${ipv4}'`)
 
   let topic = await exports.getByPath(topicPath) // try backend for doc
 

@@ -7,7 +7,7 @@ const Model = require('./src/model-interface.js')
 const Config = require('./src/config.js')
 // singleton ros master server
 const master = require('./src/master.js')
-const debug = require('debug') ("app.index")
+const debug = require('debug') ("vapor-master:index")
 const uuidv1 = require('uuid/v1')
 const paramUtil = require('./src/param-util.js')
 

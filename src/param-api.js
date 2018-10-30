@@ -3,6 +3,7 @@
 const xmlrpc = require('express-xmlrpc')
 const coreUtil = require('./core-util.js')
 const paramUtil = require('./param-util.js')
+const debug = require('debug') ('vapor-master:param-api')
 
 // hasParam(caller_id, key)
 //   -> (code, statusMessage, hasParam)
@@ -20,7 +21,7 @@ exports.hasParam = async (req, res, next) => {
                || typeof param === 'number'
                || typeof param === 'boolean')
 
-  console.log(`hasParam('${keyPath}') -> ${has}`)
+  debug(`hasParam('${keyPath}') -> ${has}`)
 
   xmlrpc.sendResult([
     1, // success code
@@ -41,7 +42,7 @@ exports.getParam = async (req, res) => {
 
   // if no param found send error response (to follow rospy master)
   if (param === undefined) {
-    console.log(`getParam('${keyPath}') -> [ERROR: not found]`)
+    debug(`getParam('${keyPath}') -> [ERROR: not found]`)
 
     xmlrpc.sendResult([
       -1, // error code
@@ -50,7 +51,7 @@ exports.getParam = async (req, res) => {
     ], req, res)
 
   } else {
-    console.log(`getParam('${keyPath}') -> ${param}`)
+    debug(`getParam('${keyPath}') -> ${param}`)
 
     xmlrpc.sendResult([
       1, // success code
@@ -64,13 +65,13 @@ exports.getParam = async (req, res) => {
 //   -> (code, statusMessage, ignore)
 exports.setParam = async (req, res) => {
   const [callerPath, keyPath, value] = req.body.params
-
+  debug(`callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
   await Promise.all([
     coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.set(keyPath, value, callerPath, req.ip), // also updates subs
   ])
-
-  xmlrpc.sendResult([
+  debug("goodbye", keyPath)
+  return xmlrpc.sendResult([
     1, // success code
     `param set at '${keyPath}'`,
     0, // follows rospy master

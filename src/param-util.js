@@ -1,6 +1,7 @@
 'use strict'
 
 const db = require('./model-interface.js')
+const debug = require('debug') ('vapor-master:param-util')
 const updateUtil = require('./update-util.js')
 const topicUtil = require('./topic-util.js')
 
