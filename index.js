@@ -1,5 +1,4 @@
 'use strict'
-require("@babel/polyfill")
 const xmlrpc = require('express-xmlrpc')
 const express = require('express')
 const morgan = require('morgan')
@@ -13,7 +12,9 @@ const paramUtil = require('./src/param-util.js')
 
 // read environment variables
 const DEFAULT_MASTER_URI = "http://localhost:11311"
+
 var masterUri = process.env.ROS_MASTER_URI
+process.env.DEBUG="*"
 if (!masterUri || masterUri == "")
 {
   debug("No ROS_MASTER_URI, defaulting to " + DEFAULT_MASTER_URI)

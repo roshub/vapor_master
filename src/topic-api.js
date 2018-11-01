@@ -25,7 +25,7 @@ exports.registerSubscriber = async (req, res) => {
   ])
 
   // rospy master topic subscription always succeeds
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `subscribed node at '${callerPath}' to topic at '${topicPath}'`,
     pubUris, // potentially empty list
@@ -44,7 +44,7 @@ exports.unregisterSubscriber = async (req, res) => {
   ])
 
   if (removed.length > 0) {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `'${callerUri}' unsubscribed from topic '${topicPath}'`,
       1,
@@ -52,7 +52,7 @@ exports.unregisterSubscriber = async (req, res) => {
 
     // rospy master *sends success code but value 0* if uri isnt subscribed
   } else {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `'${callerUri}' not subscribed to topic '${topicPath}'`,
       0, // follow rospy master
@@ -85,7 +85,7 @@ exports.registerPublisher = async (req, res) => {
   })
 
   // rospy master topic publisher registration always succeeds
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `'${callerUri}' publishing to topic at '${topicPath}'`,
     subUris,
@@ -104,7 +104,7 @@ exports.unregisterPublisher = async (req, res) => {
   ])
 
   if (removed.length > 0) {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `'${callerUri}' unregistered as publisher for topic '${topicPath}'`,
       1,
@@ -112,7 +112,7 @@ exports.unregisterPublisher = async (req, res) => {
 
     // rospy master *sends success code but value 0* if uri isnt subscribed
   } else {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `'${callerUri}' not registered publisher for topic '${topicPath}'`,
       0, // follow rospy master
@@ -134,7 +134,7 @@ exports.getPublishedTopics = async (req, res) => {
     topicUtil.getPubPairs(subpath),
   ])
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     'currently published topics',
     topicPairs,
@@ -152,7 +152,7 @@ exports.getTopicTypes = async (req, res) => {
     topicUtil.getAllPairs(), // resolves to list
   ])
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     'current topic types',
     topicPairs,

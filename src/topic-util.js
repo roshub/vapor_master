@@ -54,8 +54,8 @@ exports.logTouch = async (topicPath, topicType, ipv4) => {
   if (topicType && !topic.msgType) { // if msg type isnt set, set it now
     topic.msgType = topicType
   }
-  topic.touched.push({ ipv4, }) // push touch, date.now set by model
-
+  topic.touched = { ipv4, } // push touch, date.now set by model
+  topic.failed = undefined
   await topic.save() // wait for backend write to resolve
 }
 

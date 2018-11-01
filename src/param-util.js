@@ -146,6 +146,9 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
 
   switch (valueType) {
     case 'string':
+      if (value == ""){
+        debug("stringValue is equal to an empty string!")
+      }
       return db.Vapor.param.create({
         keyPath: keyPath,
         valueType: valueType,

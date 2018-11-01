@@ -4,14 +4,11 @@
   <version>0.0.1</version>
   <description>ephemeral ros master node for cloudscale deployment</description>
 
-  <maintainer email="philetus@roshub.io">michael philetus weller</maintainer>
+  <maintainer email="nick@roshub.io">Nicholas Zatkovich</maintainer>
 
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>Apache2.0</license>
+  <license>Apache-2.0</license>
 
-  <!-- <url type="website">http://wiki.ros.org/vapor_master</url> -->
+  <url type="website">http://github.com/roshub/vapor_master</url>
 
   <author email="philetus@roshub.io">Michael Philetus Weller</author>
 

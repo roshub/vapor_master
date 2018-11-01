@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const validate = require('../utils')
+const debug = require('debug')('vapormaster:model/vapor/param')
 
 const param = new mongoose.Schema({
   created: {
@@ -23,7 +24,15 @@ const param = new mongoose.Schema({
   },
   stringValue: {
     type: String,
-    required: function () { return this.valueType === 'string' },
+    validate: {
+      validator : function (v) {
+        return typeof v === 'string'
+      },
+      message: '{PATH} must be a string!'
+    },
+    required: function () { 
+      return (this.valueType === 'string' && !(typeof this.stringValue === 'string'))
+    },
   },
   numberValue: {
     type: Number,

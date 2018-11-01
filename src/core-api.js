@@ -20,14 +20,14 @@ exports.lookupNode = async (req, res) => {
   const rosnode = await coreUtil.getByPath(nodePath)
 
   if (rosnode && rosnode.rosnodeUri) {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       'found node uri',
       rosnode.rosnodeUri,
     ], req, res)
 
   } else {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       -1, // rospy master sends error code
       `failed to find uri for node at path '${nodePath}'`,
       '', // rospy master sends empty string
@@ -45,7 +45,7 @@ exports.shutdown = async function (req, res) {
 
   await coreUtil.logTouch(callerPath, null, req.ip)
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `vapor master uri shutting down: '${msg}'`, // status msg
     undefined,
@@ -64,7 +64,7 @@ exports.getUri = async function (req, res) {
 
   await coreUtil.logTouch(callerPath, null, req.ip)
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     'vapor master uri', // status msg
     this.uri.href, // master uri
@@ -78,7 +78,7 @@ exports.getPid = async (req, res) => {
 
   await coreUtil.logTouch(callerPath, null, req.ip)
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     'vapor master pid', // status msg
     process.pid, // pid
@@ -100,7 +100,7 @@ exports.getSystemState = async (req, res) => {
       .then(serviceUtil.listPros), // takes list & appends services
   ])
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     'vapor master system state', // status msg
     state,

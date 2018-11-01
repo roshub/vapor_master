@@ -99,9 +99,11 @@ exports.logTouch = async (path, uri, ipv4) => {
     rosnode.rosnodeUri = uri
   }
   if (ipv4) {
-    rosnode.touched.push({ ipv4, })
+    rosnode.touched = { ipv4, }
+    rosnode.failed = undefined
   } else {
-    rosnode.touched.push({}) // Date.now() set by model
+    rosnode.touched = {} // Date.now() set by model
+    rosnode.failed = undefined
   }
   await rosnode.save()
 }
@@ -122,6 +124,7 @@ exports.logFail = async (uri, msg, error) => {
     || new db.Vapor.rosnode({})
 
   // push fail event to rosnode doc & write to backend
-  rosnode.failed.push({ msg: failmsg, }) // date.now set by model
+  rosnode.touched = undefined
+  rosnode.failed = { msg: failmsg, } // date.now set by model
   await rosnode.save()
 }

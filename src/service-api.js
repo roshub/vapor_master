@@ -17,7 +17,7 @@ exports.registerService = async (req, res) => {
   ])
 
   // if create provider call didnt throw error registration succeeded
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `node '${callerPath}' providing service '${servicePath}'`,
     1, // rospy master returns 1 on success
@@ -40,7 +40,7 @@ exports.unregisterService = async (req, res) => {
   ])
 
   if (removed.length > 0) {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `'${serviceUri}' unregistered from service '${servicePath}'`,
       1,
@@ -48,7 +48,7 @@ exports.unregisterService = async (req, res) => {
 
   // rospy master *sends success code but value 0* if uri isnt registered
   } else {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `'${serviceUri}' not registered for service '${servicePath}'`,
       0, // follow rospy master
@@ -70,7 +70,7 @@ exports.lookupService = async (req, res) => {
 
   // if a service provider was found return its service uri
   if (pro) {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `service '${servicePath}' provided by node '${pro.providerPath}'`,
       pro.serviceUri,
@@ -78,7 +78,7 @@ exports.lookupService = async (req, res) => {
 
   // otherwise return error code
   } else {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       -1, // error code
       `no provider for service '${servicePath}'`,
       '', // follow rospy master

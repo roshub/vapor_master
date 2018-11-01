@@ -28,30 +28,37 @@ const path = require('path')
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 var nodeExternals = require('webpack-node-externals');
 
-var options = {
-  whitelist : ["express-xmlrpc"]
-}
 
 module.exports = {
 
-  externals:[nodeExternals(options)],
+  externals:[nodeExternals()],
   module: {
     rules: [{
       
-      include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules/express-xmlrpc')],
+      include: [path.resolve(__dirname, 'src')],
       loader: 'babel-loader',
 
       options: {
-        plugins: ['syntax-dynamic-import'],
-
+        sourceType: "script",
         presets: [['@babel/preset-env', {
           'modules': false,
           'targets': {
             node: "4.2.6"
-          }
-        }]]
+          },
+          'useBuiltIns': "entry"
+        }]],
+        plugins: [
+          [
+            "@babel/plugin-transform-runtime",
+            {
+              "corejs": false,
+              "helpers": true,
+              "regenerator": true,
+              "useESModules": false
+            }
+          ]
+        ],  
       },
-
       test: /\.js$/
     }]
   },
@@ -63,7 +70,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
 
-  mode: 'development',
+  mode: 'production',
   target: 'node',
   
   optimization: {

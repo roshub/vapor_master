@@ -9,20 +9,19 @@ const topic = new mongoose.Schema({
     default: Date.now,
     required: true,
   },
-  touched: [
-    {
-      date: {
-        type: Date,
-        default: Date.now,
-      },
-      ipv4: {
-        type: String,
-        index: true,
-        required: true,
-        match: validate.ipv4Re,
-      },
+  touched:
+  {
+    date: {
+      type: Date,
+      default: Date.now,
     },
-  ],
+    ipv4: {
+      type: String,
+      index: true,
+      required: true,
+      match: validate.ipv4Re,
+    },
+  },
   topicPath: {
     type: String,
     index: true,

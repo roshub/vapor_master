@@ -23,7 +23,7 @@ exports.hasParam = async (req, res, next) => {
 
   debug(`hasParam('${keyPath}') -> ${has}`)
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `tested for param at '${keyPath}'`,
     has,
@@ -44,7 +44,7 @@ exports.getParam = async (req, res) => {
   if (param === undefined) {
     debug(`getParam('${keyPath}') -> [ERROR: not found]`)
 
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       -1, // error code
       `no param found at '${keyPath}'`,
       0, // follows rospy master
@@ -53,7 +53,7 @@ exports.getParam = async (req, res) => {
   } else {
     debug(`getParam('${keyPath}') -> ${param}`)
 
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `param at '${keyPath}'`,
       param,
@@ -90,13 +90,13 @@ exports.deleteParam = async (req, res) => {
 
   // rospy implementation returns 1 on successful deletion & -1 if not set
   if (removed.length > 0) {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       1, // success code
       `param at '${keyPath}' deleted`,
       0,
     ], req, res)
   } else {
-    xmlrpc.sendResult([
+    return xmlrpc.sendResult([
       -1, // error code
       `param at '${keyPath}' not set`,
       0,
@@ -129,7 +129,7 @@ exports.subscribeParam = async (req, res) => {
   // spec -> http://wiki.ros.org/ROS/Parameter%20Server%20API
   const value = param ? param.value : {}
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `subscribed to param ${keyPath}`,
     value,
@@ -146,7 +146,7 @@ exports.unsubscribeParam = async (req, res) => {
     paramUtil.removeSub(keyPath, callerPath, callerUri),
   ])
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     `node '${callerPath}' unsubscribed from param ${keyPath}`,
     removed.length, // rospy master always returns 1 !?
@@ -163,7 +163,7 @@ exports.getParamNames = async (req, res) => {
     paramUtil.getAllKeys(),
   ])
 
-  xmlrpc.sendResult([
+  return xmlrpc.sendResult([
     1, // success code
     'all param names',
     keys,

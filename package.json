@@ -1,7 +1,7 @@
 {
   "name": "vapor-master",
   "version": "0.1.0",
-  "main": "./index.js",
+  "main": "./dist/index.js",
   "directories": {
     "js": "js"
   },
@@ -9,7 +9,7 @@
     "test": "./node_modules/.bin/eslint ./",
     "start": "node ./dist/vapor-master.js",
     "watch": "DEBUG=roshub.*,-roshub_crypto.*,-roshub.model.* nodemon index.js",
-    "build": "webpack --config webpack.dev.js",
+    "prepare": "webpack --config webpack.dev.js",
     "build:catkin-pkg-melodic": "rm -rf debian obj-*; bloom-generate rosdebian --os-name ubuntu --os-version bionic --ros-distro melodic; fakeroot debian/rules binary",
     "build:catkin-pkg-kinetic": "rm -rf debian obj-*; bloom-generate rosdebian --os-name ubuntu --os-version xenial --ros-distro kinetic; fakeroot debian/rules binary"
   },
@@ -20,14 +20,14 @@
     "type": "git",
     "url": "git+ssh://git@github.com:roshub/vapor_master.git"
   },
-  "author": "michael philetus weller <philetus@roshub.io>",
+  "author": "Michael Philetus Weller <philetus@roshub.io>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@babel/polyfill": "^7.0.0",
+    "@babel/runtime": "^7.1.2",
     "bossy": "^4.0.1",
     "debug": "^3.1.0",
     "express": "^4.16.2",
-    "express-xmlrpc": "NickZ/express-xmlrpc#multicall",
+    "express-xmlrpc": "../express-xmlrpc",
     "mkdirp": "^0.5.1",
     "mongoose": "5.2.7",
     "mongoose-schema-jsonschema": "^1.1.15",
@@ -41,11 +41,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
-    "@webpack-cli/init": "^0.1.2",
+    "@babel/plugin-transform-runtime": "^7.1.0",
     "babel-loader": "^8.0.4",
-    "uglifyjs-webpack-plugin": "^2.0.1",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2",
     "webpack-node-externals": "^1.7.2",
