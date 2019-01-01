@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>vapor_master</name>
-  <version>0.0.1</version>
+  <version>0.1.0</version>
   <description>ephemeral ros master node for cloudscale deployment</description>
 
   <maintainer email="nick@roshub.io">Nicholas Zatkovich</maintainer>
@@ -10,7 +10,7 @@
 
   <url type="website">http://github.com/roshub/vapor_master</url>
 
-  <author email="philetus@roshub.io">Michael Philetus Weller</author>
+  <author email="code@roshub.io">RosHub Inc.</author>
 
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>

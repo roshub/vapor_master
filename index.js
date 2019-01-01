@@ -1,5 +1,5 @@
 'use strict'
-const xmlrpc = require('express-xmlrpc')
+const xmlrpc = require('@roshub/express-xmlrpc')
 const express = require('express')
 const morgan = require('morgan')
 const Model = require('./src/model-interface.js')
@@ -36,7 +36,7 @@ if (cleanDb) {
 const app = express()
 
 // setup request logging
-app.use(morgan('combined'))
+//app.use(morgan('combined'))
 
 // xmlrpc message parsing middleware
 // parses request stream & sets request.body.method & request.body.params

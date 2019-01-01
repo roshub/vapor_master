@@ -1,6 +1,6 @@
 'use strict'
 
-const xmlrpc = require('express-xmlrpc')
+const xmlrpc = require('@roshub/express-xmlrpc')
 const coreUtil = require('./core-util.js')
 const topicUtil = require('./topic-util.js')
 const serviceUtil = require('./service-util.js')

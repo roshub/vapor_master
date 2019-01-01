@@ -1,6 +1,6 @@
 'use strict'
 
-const xmlrpc = require('express-xmlrpc')
+const xmlrpc = require('@roshub/express-xmlrpc')
 const coreUtil = require('./core-util')
 const debug = require('debug') ('vapor-master:update-util')
 

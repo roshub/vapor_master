@@ -1,7 +1,7 @@
 'use strict'
 
 const URL = require('url-parse')
-const xmlrpc = require('express-xmlrpc')
+const xmlrpc = require('@roshub/express-xmlrpc')
 const coreUtil = require('./core-util.js')
 const debug = require('debug')('vapor-master:master')
 

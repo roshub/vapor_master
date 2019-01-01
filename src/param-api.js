@@ -1,6 +1,6 @@
 'use strict'
 
-const xmlrpc = require('express-xmlrpc')
+const xmlrpc = require('@roshub/express-xmlrpc')
 const coreUtil = require('./core-util.js')
 const paramUtil = require('./param-util.js')
 const debug = require('debug') ('vapor-master:param-api')
@@ -11,7 +11,7 @@ exports.hasParam = async (req, res, next) => {
   const [callerPath, keyPath] = req.body.params
 
   const [, param] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.get(keyPath),
   ])
 
@@ -36,7 +36,7 @@ exports.getParam = async (req, res) => {
   const [callerPath, keyPath] = req.body.params
 
   const [, param] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.get(keyPath),
   ])
 
@@ -67,7 +67,7 @@ exports.setParam = async (req, res) => {
   const [callerPath, keyPath, value] = req.body.params
   debug(`callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
   await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.set(keyPath, value, callerPath, req.ip), // also updates subs
   ])
   debug("goodbye", keyPath)
@@ -84,7 +84,7 @@ exports.deleteParam = async (req, res) => {
   const [callerPath, keyPath] = req.body.params
 
   const [, removed] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.removeByKey(keyPath),
   ])
 
@@ -109,7 +109,7 @@ exports.deleteParam = async (req, res) => {
 exports.searchParam = async (req, res) => {
   const [callerPath] = req.body.params
 
-  await coreUtil.logTouch(callerPath, null, req.ip)
+  //coreUtil.logTouch(callerPath, null, req.ip)
 
   throw new Error('searchParam not implemented')
 }
@@ -120,7 +120,7 @@ exports.subscribeParam = async (req, res) => {
   const [callerPath, callerUri, keyPath] = req.body.params
 
   const [,, param] = await Promise.all([
-    coreUtil.logTouch(callerPath, callerUri, req.ip),
+    //coreUtil.logTouch(callerPath, callerUri, req.ip),
     paramUtil.createSub(keyPath, callerPath, callerUri, req.ip),
     paramUtil.get(keyPath),
   ])
@@ -142,7 +142,7 @@ exports.unsubscribeParam = async (req, res) => {
   const [callerPath, callerUri, keyPath] = req.body.params
 
   const [, removed] = await Promise.all([
-    coreUtil.logTouch(callerPath, callerUri, req.ip),
+    //coreUtil.logTouch(callerPath, callerUri, req.ip),
     paramUtil.removeSub(keyPath, callerPath, callerUri),
   ])
 
@@ -159,7 +159,7 @@ exports.getParamNames = async (req, res) => {
   const [callerPath] = req.body.params
 
   const [, keys] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.getAllKeys(),
   ])
 
