@@ -2,7 +2,7 @@
 <package format="2">
   <name>vapor_master</name>
   <version>0.1.0</version>
-  <description>ephemeral ros master node for cloudscale deployment</description>
+  <description>high availability ros master</description>
 
   <maintainer email="nick@roshub.io">Nicholas Zatkovich</maintainer>
 
@@ -12,7 +12,6 @@
 
   <author email="code@roshub.io">RosHub Inc.</author>
 
-  <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>nodejs</buildtool_depend>
   <buildtool_depend>npm</buildtool_depend>

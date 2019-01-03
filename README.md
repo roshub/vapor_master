@@ -1,2 +1,2 @@
 # vapor master
-ephemeral ros master node for cloudscale deployment
+high availability ros master

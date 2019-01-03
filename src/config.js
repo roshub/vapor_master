@@ -11,7 +11,7 @@ const sanitize = require('sanitize-filename')
 
 const logger = require('debug')('vapor-master:config');
 
-
+const DEFAULT_CONFIG = require('./default-config')
 var BASE_PATH = process.env.SNAP_COMMON || ((process.env.HOME) ? (process.env.HOME + '/.vapor-master') : '.' )
 
 
@@ -40,10 +40,10 @@ class Config {
   }
 
   static config(defaults){
-      let c = new Config(defaults)
-      c.open()
+    let c = new Config(defaults)
+    c.open()
 
-      return c
+    return c
   }
 
   // Read config file as json
@@ -186,4 +186,17 @@ class Config {
   }
 }
 
-module.exports = Config
+const CONFIG_KEY = Symbol.for("app.vapormaster.config")
+
+var globalSymbols = Object.getOwnPropertySymbols(global)
+var hasConfig = (globalSymbols.indexOf(CONFIG_KEY) > -1)
+
+
+if(!hasConfig){
+  var config = Config.config(DEFAULT_CONFIG)
+  global[CONFIG_KEY] = {
+    config: config
+  }
+}
+
+module.exports = global[CONFIG_KEY].config
