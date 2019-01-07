@@ -5,6 +5,8 @@
   <description>high availability ros master</description>
 
   <maintainer email="nick@roshub.io">Nicholas Zatkovich</maintainer>
+  <maintainer email="alanm@roshub.io">Alan Meekins</maintainer>
+  <maintainer email="code@roshub.io">RosHub Inc.</maintainer>
 
   <license>Apache-2.0</license>
 
