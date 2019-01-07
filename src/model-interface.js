@@ -3,24 +3,19 @@
  *  statically through 'require'.
  */
 const Model = require('./model/db.js')
-
 const Config = require('./config.js')
 
-const DB_KEY = Symbol.for("app.vapormaster.db")
 
-const default_db_uri = 'mongodb://localhost:27017/roshub_vapor_master'
+const DB_KEY = Symbol.for("app.vapormaster.db")
 
 var globalSymbols = Object.getOwnPropertySymbols(global)
 var hasDb = (globalSymbols.indexOf(DB_KEY) > -1)
 
-if(!hasDb){
-    var config;
-    config = Config.config({db:default_db_uri})
-    var db_uri = config.read('db')
 
-    global[DB_KEY] = {
-        db: new Model(db_uri)
-    }
+if(!hasDb){
+  global[DB_KEY] = {
+    db: new Model( Config.read('db') )
+  }
 }
 
 const instance = global[DB_KEY].db

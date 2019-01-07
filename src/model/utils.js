@@ -24,8 +24,6 @@ exports.packageRe = [
   'package type format -> \'std_msgs/String\'',
 ]
 
-// variables for api mongoose schema validation
-
 exports.name = { type: String, maxlength: 50, minlength: 3}
 
 exports.string = function(maxlength, minlength){
