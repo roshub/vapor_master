@@ -7,8 +7,8 @@ description: RosHub Vapor Master
 
 apps:
   vapor-master:
-    command: vapor_master
-    plugs: [network, network-bind]
+    command: npx vapor-master
+    plugs: [network, network-bind, network-manager,network-control ]
     daemon: simple
 
 parts:
