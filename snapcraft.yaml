@@ -5,6 +5,18 @@ confinement: strict
 summary: RosHub Vapor Master
 description: RosHub Vapor Master
 icon: icons/roshub_vector_logo.svg
+architectures:
+  - build-on: amd64
+    run-on: amd64
+
+  - build-on: i386
+    run-on: i386
+
+  - build-on: armhf
+    run-on: armhf
+
+  - build-on: arm64
+    run-on: arm64
 
 apps:
   vapor-master:
@@ -18,3 +30,4 @@ parts:
     plugin: nodejs
     node-engine: "8.12.0"
     node-package-manager: "yarn"
+    npm-run: ["prepare-snapcraft"]
