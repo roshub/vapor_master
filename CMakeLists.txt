@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vapor_master)
 
 find_package(catkin REQUIRED COMPONENTS
-  std_msgs
+#  std_msgs
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES vapor_master
-  CATKIN_DEPENDS std_msgs
-  DEPENDS nodejs
+#  LIBRARIES vapor_master
+#  CATKIN_DEPENDS std_msgs
+#  DEPENDS nodejs
 )
 
 execute_process(COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/node_modules ${CMAKE_CURRENT_SOURCE_DIR}/dist )
