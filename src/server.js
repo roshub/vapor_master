@@ -50,54 +50,53 @@ class Server {
 
   async start(retry) {
 
+    return new Promise((resolve,reject)=>{
 
-      return new Promise((resolve,reject)=>{
+      debug('starting server')
 
-        debug('starting server')
+      // parse uri string for server to listen at
+      master.setUri(Config.read('ROS_MASTER_URI'))
 
-        // parse uri string for server to listen at
-        master.setUri(Config.read('ROS_MASTER_URI'))
+      this.server = this.app.listen(master.uri.port, master.uri.hostname, ()=>{
+        //debug('server listening')
+        //debug('address', this.server.address())
+        clearTimeout(this.errorHandlerTimer)
+        this.errorHandlerTimer = null
 
-        this.server = this.app.listen(master.uri.port, master.uri.hostname, ()=>{
-          //debug('server listening')
-          //debug('address', this.server.address())
-          clearTimeout(this.errorHandlerTimer)
-          this.errorHandlerTimer = null
+        // if clean database flag is set clear all data from db
+        if (Config.read('clean-db')) {
+          master.cleanDb()
+        }
 
-          // if clean database flag is set clear all data from db
-          if (Config.read('clean-db')) {
-            master.cleanDb()
-          }
+        // set run_id
+        paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1")
 
-          // set run_id
-          paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1")
+        debug(`vapor master listening at '${master.uri.href}'`)
+        this.server.removeAllListeners('error')
 
-          debug(`vapor master listening at '${master.uri.href}'`)
-          this.server.removeAllListeners('error')
-
-          let dbPromise = Model.connect().then(()=>{
-            debug("Connected to Database")
-          })
-  
-          if(!retry){ return resolve(dbPromise) }
+        let dbPromise = Model.connect().then(()=>{
+          debug("Connected to Database")
         })
-  
-        if(retry){ 
-          // retry after errors
-          this.server.on('error', this.handleServerErrorRetry.bind(this))
-          return resolve()
+
+        if(!retry){ return resolve(dbPromise) }
+      })
+
+      if(retry){ 
+        // retry after errors
+        this.server.on('error', this.handleServerErrorRetry.bind(this))
+        return resolve()
+      }
+      else {
+        // stop after errors
+        const errorHandler = async (error)=>{
+          debug('CRITICAL', JSON.stringify(error))
+          await this.stop()
+          reject(error)
         }
-        else {
-          // stop after errors
-          const errorHandler = async (error)=>{
-            debug('CRITICAL', JSON.stringify(error))
-            await this.stop()
-            reject(error)
-          }
-  
-          this.server.on('error', errorHandler)
-        }
-      }).catch((err)=>{
+
+        this.server.on('error', errorHandler)
+      }
+    }).catch((err)=>{
 
       if(err && err.errno!='EADDRINUSE'){
         console.error('error', err)

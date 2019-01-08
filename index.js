@@ -3,7 +3,7 @@ const Config = require('./src/config.js')
 const Server = require('./src/server')
 
 
-if(Config.read('help')){
+if(Config.read('help') || Config.read('h')){
   console.log(`Usage vapor-master`)
   console.log(`\t`, `--clean-db`)
   console.log(`\t`, `--no-clean-db`)

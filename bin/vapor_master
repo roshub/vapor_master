@@ -2,13 +2,13 @@
 
 if ! [ -z $SNAP ];
 then
-    node $SNAP/node_modules/vapor-master/index.js;
+    node $SNAP/node_modules/vapor-master/index.js $@
 else
     VAPOR_MASTER_ROS_PKG_PATH=`rospack find vapor_master`
     if [ -z $VAPOR_MASTER_ROS_PKG_PATH ];
     then 
-        node ../dist/vapor_master.js
+        node ../dist/vapor_master.js $@
     else
-        node $VAPOR_MASTER_ROS_PKG_PATH/dist/vapor_master.js
+        node $VAPOR_MASTER_ROS_PKG_PATH/dist/vapor_master.js $@
     fi
 fi
