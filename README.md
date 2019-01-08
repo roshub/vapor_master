@@ -74,9 +74,6 @@ Vapor looks for configuration files in:
     * If neither $SNAP_COMMON or $HOME are defined
 
 
-
-## Snap Configuration
-
 # Developing
 
 To develop you will need to install
@@ -94,6 +91,7 @@ yarn watch
 
 ## Roadmap
 
+ * Support snap configuration
  * Tutorials
  * ROS Api
     * Database availability as ROS Topic
