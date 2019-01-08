@@ -30,3 +30,4 @@ parts:
     plugin: nodejs
     node-engine: "8.12.0"
     node-package-manager: "yarn"
+    npm-run: ["prepare-snapcraft"]

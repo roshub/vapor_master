@@ -14,7 +14,7 @@ catkin_package(
 
 execute_process(COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/node_modules ${CMAKE_CURRENT_SOURCE_DIR}/dist )
 execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} install)
-execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} run prepare)
+execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} run prepare-catkin)
 execute_process(COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/node_modules )
 execute_process(COMMAND npm --prefix ${CMAKE_CURRENT_SOURCE_DIR} --production install)
 

@@ -9,10 +9,10 @@
     "test": "./node_modules/.bin/eslint ./",
     "start": "node ./dist/vapor_master.js",
     "watch": "DEBUG=vapor-master.* nodemon index.js",
-    "prepare": "./node_modules/webpack/bin/webpack.js --config webpack.dev.js",
+    "prepare-catkin": "./node_modules/webpack/bin/webpack.js --config webpack.dev.js",
+    "prepare-snapcraft": "npx webpack --config webpack.dev.js",
     "build:catkin-pkg-melodic": "rm -rf debian obj-*; bloom-generate rosdebian --os-name ubuntu --os-version bionic --ros-distro melodic; fakeroot debian/rules binary",
-    "build:catkin-pkg-kinetic": "rm -rf debian obj-*; bloom-generate rosdebian --os-name ubuntu --os-version xenial --ros-distro kinetic; fakeroot debian/rules binary",
-    "postinstall": "npm run prepare"
+    "build:catkin-pkg-kinetic": "rm -rf debian obj-*; bloom-generate rosdebian --os-name ubuntu --os-version xenial --ros-distro kinetic; fakeroot debian/rules binary"
   },
   "bin": {
     "vapor-master": "./bin/vapor_master"
