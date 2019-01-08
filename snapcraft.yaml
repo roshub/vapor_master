@@ -4,11 +4,13 @@ grade: stable
 confinement: strict
 summary: RosHub Vapor Master
 description: RosHub Vapor Master
+architectures:
+  - build-on: [amd64, i386]
 
 apps:
   vapor-master:
     command: npx vapor-master
-    plugs: [network, network-bind, network-manager,network-control ]
+    plugs: [network, network-bind]
     daemon: simple
 
 parts:
