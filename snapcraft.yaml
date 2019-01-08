@@ -4,7 +4,7 @@ grade: stable
 confinement: strict
 summary: RosHub Vapor Master
 description: RosHub Vapor Master
-icon: icons/roshub_vector_logo.svg
+icon: icons/roshub_vector_logo-256x256.png
 architectures:
   - build-on: amd64
     run-on: amd64
