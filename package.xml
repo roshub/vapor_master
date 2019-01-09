@@ -11,15 +11,14 @@
   <license>Apache-2.0</license>
 
   <url type="website">http://github.com/roshub/vapor_master</url>
+  <url type="blog">https://medium.com/roshub/introducing-vapor-a-high-availability-ros-1-x-master-19d66506cb7a</url>
+  <url type="wiki">http://wiki.ros.org/vapor_master</url>
 
   <author email="code@roshub.io">RosHub Inc.</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>nodejs</buildtool_depend>
   <buildtool_depend>npm</buildtool_depend>
-  <!-- <build_depend>std_msgs</build_depend> -->
-  <!-- <build_export_depend>std_msgs</build_export_depend> -->
-  <!-- <exec_depend>std_msgs</exec_depend> -->
   <exec_depend>rospack</exec_depend>
   <exec_depend>nodejs</exec_depend>
 
