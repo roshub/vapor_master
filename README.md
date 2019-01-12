@@ -26,7 +26,7 @@ Vapor does not strictly require a ROS installtion, it can simply be run as a mic
 
 ## Debian Package
 
-**NOTE:** We are stil awaiting the next rosdistro sync for Medlodic, you can [follow sync status here](http://repositories.ros.org/status_page/ros_melodic_default.html?q=vapor)
+**NOTE:** We are still awaiting the next rosdistro sync for Melodic, you can [follow sync status here](http://repositories.ros.org/status_page/ros_melodic_default.html?q=vapor)
 
  * [Install ROS Melodic](http://wiki.ros.org/melodic/Installation/)
  * `sudo apt install ros-melodic-vapor_master`
