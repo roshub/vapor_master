@@ -35,10 +35,18 @@ exports.hasParam = async (req, res, next) => {
 exports.getParam = async (req, res) => {
   const [callerPath, keyPath] = req.body.params
 
-  const [, param] = await Promise.all([
+  debug(keyPath)
+
+  const values = await Promise.all([
     //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.get(keyPath),
   ])
+
+  debug(values)
+
+  const param = values[1] || values[0] || undefined
+
+  debug(param)
 
   // if no param found send error response (to follow rospy master)
   if (param === undefined) {
