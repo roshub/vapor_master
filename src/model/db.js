@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const cachegoose = require('cachegoose')
+//const cachegoose = require('cachegoose')
 mongoose.Promise = Promise
 require('mongoose-schema-jsonschema')(mongoose);
 mongoose.set('debug', false)
@@ -12,7 +12,7 @@ class Db {
       keepAlive: 200, 
       useNewUrlParser: true 
     })
-    this.cachegoose = cachegoose(mongoose);
+    //this.cachegoose = cachegoose(mongoose);
     this.Vapor = require('./vapor')
   }
 
