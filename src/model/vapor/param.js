@@ -13,6 +13,7 @@ const param = new mongoose.Schema({
   keyPath: {
     type: String,
     index: true,
+    unique: true,
     required: true,
     maxlength: validate.maxPath,
     match: validate.pathRe,
@@ -22,6 +23,7 @@ const param = new mongoose.Schema({
     enum: ['null', 'string', 'number', 'boolean'],
     required: true,
   },
+  isArrayItem : {type: Boolean, default: false},
   stringValue: {
     type: String,
     validate: {
@@ -44,14 +46,14 @@ const param = new mongoose.Schema({
   },
   creatorPath: {
     type: String,
-    index: true,
+    //index: true,
     required: true,
     maxlength: validate.maxPath,
     match: validate.pathRe,
   },
   creatorIpv4: {
     type: String,
-    index: true,
+    //index: true,
     required: true,
     match: validate.ipv4Re,
   },

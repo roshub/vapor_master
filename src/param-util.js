@@ -64,6 +64,10 @@ exports.get = async (keyPath) => {
   // params clobber older params
   const params = await exports.getBySubpath(path)
   const tree = {}
+  
+  debug('get', keyPath)
+  debug('params', JSON.stringify(params,null,2))
+
   for (const param of params) {
 
     // handle special case of root path query ('/') which gives 0 steps
@@ -72,6 +76,8 @@ exports.get = async (keyPath) => {
     //   will be captured properly
     const keys = (steps.length === 0) ? param.keyPath.split('/').slice(1, -1)
       : param.keyPath.split('/').slice(steps.length, -1)
+
+    //debug(JSON.stringify(keys))
 
     let subtree = tree // start subtree at top level
     for (let i = 0; i < keys.length; i++) {
@@ -93,6 +99,9 @@ exports.get = async (keyPath) => {
       }
     }
   }
+
+  debug(steps)
+  debug('tree', JSON.stringify(tree,null,2))
 
   // unless query path was '/' value is keyed with last step of query
   return (steps.length === 0) ? tree : tree[steps[steps.length - 1]]
@@ -141,7 +150,7 @@ exports.removeByKey = async (keyPath) => {
   return Promise.all(removed) // resolve parallel backend removes
 }
 
-exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
+exports.setByKey = (keyPath, value, creatorPath, creatorIpv4, isArrayItem) => {
   const valueType = (value === null) ? 'null' : typeof value
 
   switch (valueType) {
@@ -155,6 +164,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
         stringValue: value,
         creatorPath: creatorPath,
         creatorIpv4: creatorIpv4,
+        isArrayItem: isArrayItem
       })
     case 'number':
       return db.Vapor.param.create({
@@ -163,6 +173,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
         numberValue: value,
         creatorPath: creatorPath,
         creatorIpv4: creatorIpv4,
+        isArrayItem: isArrayItem
       })
     case 'boolean':
       return db.Vapor.param.create({
@@ -171,6 +182,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
         booleanValue: value,
         creatorPath: creatorPath,
         creatorIpv4: creatorIpv4,
+        isArrayItem: isArrayItem
       })
   }
   return db.Vapor.param.create({ // null value only has valuetype set
@@ -178,6 +190,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
     valueType: valueType,
     creatorPath: creatorPath,
     creatorIpv4: creatorIpv4,
+    isArrayItem: isArrayItem
   })
 }
 
@@ -189,7 +202,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
 //   - set('/foot/left', {sock: 'green'}, ..)
 //   produce identical results -- a single new backend doc
 //   -> Param{ keyPath: '/foot/left/sock', value: 'green', ..}
-exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
+exports.set = async (keyPath, value, creatorPath, creatorIpv4, isArrayItem) => {
 
   // assure key path has trailing slash
   const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
@@ -200,7 +213,9 @@ exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
       || typeof value === 'number'
       || typeof value === 'boolean') {
 
-    await exports.setByKey(path, value, creatorPath, creatorIpv4)
+    debug('set typeof value is ', typeof value)
+
+    await exports.setByKey(path, value, creatorPath, creatorIpv4, isArrayItem)
 
     setImmediate(() => { // on success async update subs
       exports.updateSubs(path, value)
@@ -208,12 +223,13 @@ exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
 
   // for object make recursive call for each [subkey, subvalue] pair
   } else if (typeof value === 'object') {
-
+    debug('set typeof value is object')
     // make recursive call for each subkey & await completion in parallel
     const calls = []
     for (const [ subkey, subvalue, ] of Object.entries(value)) {
       calls.push(
-        exports.set(path + subkey, subvalue, creatorPath, creatorIpv4))
+        exports.set(path + subkey, subvalue, creatorPath, creatorIpv4, Array.isArray(value))
+      )
     }
     await Promise.all(calls)
 

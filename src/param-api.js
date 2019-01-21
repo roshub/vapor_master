@@ -66,6 +66,7 @@ exports.getParam = async (req, res) => {
 exports.setParam = async (req, res) => {
   const [callerPath, keyPath, value] = req.body.params
   debug(`callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
+  debug(req.body.params)
   await Promise.all([
     //coreUtil.logTouch(callerPath, null, req.ip),
     paramUtil.set(keyPath, value, callerPath, req.ip), // also updates subs
