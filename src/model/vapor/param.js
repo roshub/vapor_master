@@ -49,20 +49,12 @@ const param = new mongoose.Schema({
   },
   creatorPath: {
     type: String,
-<<<<<<< HEAD
-    //index: true,
-=======
->>>>>>> 922224f7bfc27577d92aa7c541f2ee8d1042de78
     required: true,
     maxlength: validate.maxPath,
     match: validate.pathRe,
   },
   creatorIpv4: {
     type: String,
-<<<<<<< HEAD
-    //index: true,
-=======
->>>>>>> 922224f7bfc27577d92aa7c541f2ee8d1042de78
     required: true,
     match: validate.ipv4Re,
   },
