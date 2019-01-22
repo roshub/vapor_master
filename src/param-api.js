@@ -13,11 +13,12 @@ exports.hasParam = async (req, res, next) => {
   // await coreUtil.logTouch(callerPath, null, req.ip)
   const param = await paramUtil.get(keyPath)
 
-  // test for leaf param (null | string | number | boolean)
+  // test for leaf param (null | string | number | boolean | array)
   const has = (param === null
                || typeof param === 'string'
                || typeof param === 'number'
-               || typeof param === 'boolean')
+               || typeof param === 'boolean'
+               || Array.isArray(param))
 
   debug(`hasParam('${keyPath}') -> ${has}`)
 

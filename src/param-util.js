@@ -77,6 +77,8 @@ exports.get = async (keyPath) => {
     const keys = (steps.length === 0) ? param.keyPath.split('/').slice(1, -1)
       : param.keyPath.split('/').slice(steps.length, -1)
 
+    //debug(JSON.stringify(keys))
+
     let subtree = tree // start subtree at top level
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
@@ -152,8 +154,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
   const valueType = (value === null) ? 'null' :  ((Array.isArray(value)) ? 'array' : typeof value )
 
   const updateQuery = {
-    keyPath: keyPath,
-    valueType: valueType
+    keyPath: keyPath
   }
 
   const options = {
@@ -221,8 +222,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
       keyPath: keyPath,
       valueType: valueType,
       creatorPath: creatorPath,
-      creatorIpv4: creatorIpv4,
-      isArrayItem: isArrayItem
+      creatorIpv4: creatorIpv4
     },
     options
   )
