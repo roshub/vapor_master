@@ -50,12 +50,28 @@ class Server {
 
   async start(retry) {
 
-    return new Promise((resolve,reject)=>{
+    debug('starting server')
+    let promises = []
 
-      debug('starting server')
+    // parse uri string for server to listen at
+    master.setUri(Config.read('ROS_MASTER_URI'))
 
-      // parse uri string for server to listen at
-      master.setUri(Config.read('ROS_MASTER_URI'))
+    // if clean database flag is set clear all data from db
+    if (Config.read('clean-db')) {
+      master.cleanDb().then(()=>{
+        // set run_id
+        paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1")
+      })
+    }
+    else{
+      // set run_id
+      promises.push( paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1") )
+    }
+
+    
+
+    let serverStart = new Promise((resolve,reject)=>{
+
 
       this.server = this.app.listen(master.uri.port, master.uri.hostname, ()=>{
         //debug('server listening')
@@ -63,13 +79,6 @@ class Server {
         clearTimeout(this.errorHandlerTimer)
         this.errorHandlerTimer = null
 
-        // if clean database flag is set clear all data from db
-        if (Config.read('clean-db')) {
-          master.cleanDb()
-        }
-
-        // set run_id
-        paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1")
 
         debug(`vapor master listening at '${master.uri.href}'`)
         this.server.removeAllListeners('error')
@@ -98,11 +107,17 @@ class Server {
       }
     }).catch((err)=>{
 
+      console.log("EXIT")
+
       if(err && err.errno!='EADDRINUSE'){
         console.error('error', err)
       }
       process.exit(1)
     })
+
+    promises.push(serverStart)
+
+    return Promise.all(promises)
   }
 
   async stop() {

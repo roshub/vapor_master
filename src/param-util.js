@@ -154,8 +154,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
   const valueType = (value === null) ? 'null' :  ((Array.isArray(value)) ? 'array' : typeof value )
 
   const updateQuery = {
-    keyPath: keyPath,
-    valueType: valueType
+    keyPath: keyPath
   }
 
   const options = {
@@ -223,8 +222,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
       keyPath: keyPath,
       valueType: valueType,
       creatorPath: creatorPath,
-      creatorIpv4: creatorIpv4,
-      isArrayItem: isArrayItem
+      creatorIpv4: creatorIpv4
     },
     options
   )
