@@ -77,8 +77,6 @@ exports.get = async (keyPath) => {
     const keys = (steps.length === 0) ? param.keyPath.split('/').slice(1, -1)
       : param.keyPath.split('/').slice(steps.length, -1)
 
-    //debug(JSON.stringify(keys))
-
     let subtree = tree // start subtree at top level
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
