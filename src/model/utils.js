@@ -10,7 +10,7 @@ exports.ipv4Re = [
 ]
 exports.maxPath = 256
 exports.pathRe = [
-  /^\/[\w/-]*$/,
+  /^\/[\w/\-\]\[]*$/,
   'global path format -> \'/path/to/resource-0\'',
 ]
 exports.maxUri = 256
