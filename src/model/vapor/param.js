@@ -20,10 +20,13 @@ const param = new mongoose.Schema({
   },
   valueType: {
     type: String,
-    enum: ['null', 'string', 'number', 'boolean'],
+    enum: ['null', 'string', 'number', 'boolean', 'array'],
     required: true,
   },
-  isArrayItem : {type: Boolean, default: false},
+  arrayValue: {
+    type: mongoose.Schema.Types.Mixed,
+    required: function () { return this.valueType === 'array' }
+  },
   stringValue: {
     type: String,
     validate: {
@@ -38,11 +41,11 @@ const param = new mongoose.Schema({
   },
   numberValue: {
     type: Number,
-    required: function () { return this.valueType === 'number' },
+    required: function () { return this.valueType === 'number' }
   },
   booleanValue: {
     type: Boolean,
-    required: function () { return this.valueType === 'boolean' },
+    required: function () { return this.valueType === 'boolean' }
   },
   creatorPath: {
     type: String,
@@ -67,6 +70,8 @@ param.methods.paramValue = function () {
       return this.numberValue
     case 'boolean':
       return this.booleanValue
+    case 'array':
+      return this.arrayValue
   }
   return null // if value isnt string, number, or boolean its null
 }

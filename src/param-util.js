@@ -150,48 +150,84 @@ exports.removeByKey = async (keyPath) => {
   return Promise.all(removed) // resolve parallel backend removes
 }
 
-exports.setByKey = (keyPath, value, creatorPath, creatorIpv4, isArrayItem) => {
-  const valueType = (value === null) ? 'null' : typeof value
+exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
+  const valueType = (value === null) ? 'null' :  ((Array.isArray(value)) ? 'array' : typeof value )
+
+  const updateQuery = {
+    keyPath: keyPath,
+    valueType: valueType
+  }
+
+  const options = {
+    upsert: true
+  }
 
   switch (valueType) {
     case 'string':
       if (value == ""){
         debug("stringValue is equal to an empty string!")
       }
-      return db.Vapor.param.create({
-        keyPath: keyPath,
-        valueType: valueType,
-        stringValue: value,
-        creatorPath: creatorPath,
-        creatorIpv4: creatorIpv4,
-        isArrayItem: isArrayItem
-      })
+      return db.Vapor.param.findOneAndUpdate(
+        updateQuery,
+        {
+          keyPath: keyPath,
+          valueType: valueType,
+          stringValue: value,
+          creatorPath: creatorPath,
+          creatorIpv4: creatorIpv4
+        },
+        options
+      )
     case 'number':
-      return db.Vapor.param.create({
-        keyPath: keyPath,
-        valueType: valueType,
-        numberValue: value,
-        creatorPath: creatorPath,
-        creatorIpv4: creatorIpv4,
-        isArrayItem: isArrayItem
-      })
+      return db.Vapor.param.findOneAndUpdate(
+        updateQuery, 
+        {
+          keyPath: keyPath,
+          valueType: valueType,
+          numberValue: value,
+          creatorPath: creatorPath,
+          creatorIpv4: creatorIpv4
+        },
+        options
+      )
     case 'boolean':
-      return db.Vapor.param.create({
-        keyPath: keyPath,
-        valueType: valueType,
-        booleanValue: value,
-        creatorPath: creatorPath,
-        creatorIpv4: creatorIpv4,
-        isArrayItem: isArrayItem
-      })
+      return db.Vapor.param.findOneAndUpdate(
+        updateQuery,
+        {
+          keyPath: keyPath,
+          valueType: valueType,
+          booleanValue: value,
+          creatorPath: creatorPath,
+          creatorIpv4: creatorIpv4
+        },
+        options
+      )
+    case 'array':
+      return db.Vapor.param.findOneAndUpdate(
+        updateQuery,
+        {
+          keyPath: keyPath,
+          valueType: valueType,
+          arrayValue: value,
+          creatorPath: creatorPath,
+          creatorIpv4: creatorIpv4,
+        },
+        options
+      )
   }
-  return db.Vapor.param.create({ // null value only has valuetype set
-    keyPath: keyPath,
-    valueType: valueType,
-    creatorPath: creatorPath,
-    creatorIpv4: creatorIpv4,
-    isArrayItem: isArrayItem
-  })
+
+  // null value only has valuetype set
+  return db.Vapor.param.findOneAndUpdate(
+    updateQuery,
+    { 
+      keyPath: keyPath,
+      valueType: valueType,
+      creatorPath: creatorPath,
+      creatorIpv4: creatorIpv4,
+      isArrayItem: isArrayItem
+    },
+    options
+  )
 }
 
 // recursively sets value at path until leaf (!object) value reached
@@ -202,8 +238,9 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4, isArrayItem) => {
 //   - set('/foot/left', {sock: 'green'}, ..)
 //   produce identical results -- a single new backend doc
 //   -> Param{ keyPath: '/foot/left/sock', value: 'green', ..}
-exports.set = async (keyPath, value, creatorPath, creatorIpv4, isArrayItem) => {
+exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
 
+  
   // assure key path has trailing slash
   const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
 
@@ -215,33 +252,37 @@ exports.set = async (keyPath, value, creatorPath, creatorIpv4, isArrayItem) => {
 
     debug('set typeof value is ', typeof value)
 
-    await exports.setByKey(path, value, creatorPath, creatorIpv4, isArrayItem)
-
-    setImmediate(() => { // on success async update subs
-      exports.updateSubs(path, value)
-    })
+    await exports.setByKey(path, value, creatorPath, creatorIpv4)
 
   // for object make recursive call for each [subkey, subvalue] pair
   } else if (typeof value === 'object') {
-    debug('set typeof value is object')
-    // make recursive call for each subkey & await completion in parallel
-    const calls = []
-    for (const [ subkey, subvalue, ] of Object.entries(value)) {
-      calls.push(
-        exports.set(path + subkey, subvalue, creatorPath, creatorIpv4, Array.isArray(value))
-      )
-    }
-    await Promise.all(calls)
 
-    // on success async update subs
-    setImmediate(() => {
-      exports.updateSubs(path, value)
-    })
+    if(Array.isArray(value)){
+      debug('set typeof value is array')
+      await exports.setByKey(path, value, creatorPath, creatorIpv4)
+    }
+    else{
+      debug('set typeof value is object')
+      // make recursive call for each subkey & await completion in parallel
+      const calls = []
+
+      for (let [ subkey, subvalue, ] of Object.entries(value)) {
+
+        calls.push( exports.set(path + subkey, subvalue, creatorPath, creatorIpv4) )
+      }
+
+      await Promise.all(calls)
+    }
 
   } else {
     throw new Error(
       `cant set param of type '${typeof value}': '${value.toString()}'`)
   }
+
+  // on success async update subs
+  setImmediate(() => {
+    exports.updateSubs(path, value)
+  })
 }
 
 // check for any subscribers to key path & update
