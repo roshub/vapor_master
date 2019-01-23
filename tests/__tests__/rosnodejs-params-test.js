@@ -1,4 +1,4 @@
-const debug = require('debug')('test.rosnodejs.client')
+const debug = require('debug')('test.rosnodejs-client.params')
 const Server = require('../../src/server')
 const rosnodejs = require('rosnodejs')
 
@@ -40,7 +40,10 @@ it('delete param', async()=>{
         debug(deleteParamReply)
         debug("error!")
         debug(error)
-        debug(error.statusCode)
-        debug(error.statusMessage)
     }
+})
+afterAll(async ()=>{
+    await rosnodejs.shutdown();
+    await server.stop();
+    return 0;
 })
