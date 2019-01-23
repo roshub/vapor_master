@@ -20,15 +20,22 @@ it('register service', done =>{
         return true;
     })
     nh.waitForService("/test_service").then((success)=>{
-        if (success){
-            let serviceClient = nh.serviceClient("/test_service", "std_srvs/SetBool")
-            serviceClient.call({data:true}).then((res)=>{
-                expect(res).toBeTruthy()
-                expect(res.success).toEqual(true)
-                expect(res.message).toEqual("Set the bool!")
-                done()
-            })
-        }
+        expect(success).toEqual(true)
+        let serviceClient = nh.serviceClient("/test_service", "std_srvs/SetBool")
+        serviceClient.call({data:true}).then((res)=>{
+            expect(res).toBeTruthy()
+            expect(res.success).toEqual(true)
+            expect(res.message).toEqual("Set the bool!")
+            done()
+        })
+    })
+})
+it('unregister service', done =>{
+    nh.unadvertiseService("/test_service").then((res)=>{
+        expect(res).toBeTruthy();
+        expect(res[0]).toEqual(1)
+        expect(res[2]).toEqual(1)
+        done();
     })
 })
 afterAll(async ()=>{
