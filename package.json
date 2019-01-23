@@ -1,6 +1,6 @@
 {
   "name": "vapor-master",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "./dist/vapor_master.js",
   "directories": {
     "js": "js"
