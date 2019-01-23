@@ -45,7 +45,7 @@ exports.shutdown = async function (req, res) {
 
   await coreUtil.logTouch(callerPath, null, req.ip)
 
-  return xmlrpc.sendResult([
+  xmlrpc.sendResult([
     1, // success code
     `vapor master uri shutting down: '${msg}'`, // status msg
     undefined,

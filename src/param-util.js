@@ -138,7 +138,7 @@ exports.removeSub = async (keyPath, subPath, subUri) => {
 
 exports.removeByKey = async (keyPath) => {
   const params = await db.Vapor.param.find()
-    .where('keyPath').equals(keyPath).exec()
+    .where('keyPath').equals(keyPath+ '/').exec()
 
   const removed = []
   for (const param of params) {

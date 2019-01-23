@@ -87,7 +87,7 @@ exports.deleteParam = async (req, res) => {
   const [callerPath, keyPath] = req.body.params
 
   // await coreUtil.logTouch(callerPath, null, req.ip)
-  const param = await paramUtil.removeByKey(keyPath)
+  const removed = await paramUtil.removeByKey(keyPath)
 
   // rospy implementation returns 1 on successful deletion & -1 if not set
   if (removed.length > 0) {
