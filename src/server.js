@@ -124,7 +124,7 @@ class Server {
     return new Promise((resolve, reject)=>{
       if(!this.server || !this.server.listening){ return resolve() }
 
-      this.server.stop((err)=>{
+      this.server.close((err)=>{
         if(!err){
           debug('stopped server')
           return resolve()
