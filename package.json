@@ -6,7 +6,7 @@
     "js": "js"
   },
   "scripts": {
-    "test": "jest --verbose --testEnvironment ./tests/mongo-mock-env.js --globalSetup ./tests/mongo-mock-setup.js --globalTeardown ./tests/mongo-mock-teardown.js --detectOpenHandles --runInBand --forceExit --bail",
+    "test": "jest --verbose --config ./tests/jest.config.js --detectOpenHandles --runInBand --forceExit --bail",
     "start": "node ./dist/vapor_master.js",
     "watch": "DEBUG=vapor-master.* nodemon index.js",
     "prepare-catkin": "./node_modules/webpack/bin/webpack.js --config webpack.dev.js",

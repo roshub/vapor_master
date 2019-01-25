@@ -29,11 +29,5 @@ module.exports = async function() {
     mongoUri: mongoUri,
   }
 
-  // Write global config to disk because all tests run in different contexts.
-  fs.writeFileSync(globalConfigPath, JSON.stringify(global.__TEST_CONFIG__));
-  debug('Config is written');
-
-  debug(global.__TEST_CONFIG__)
-
   debug('== setup.js () done')
 };

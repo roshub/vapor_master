@@ -8,7 +8,7 @@ const debug = require('debug') ('vapor-master:core-api')
 
 // lookupNode(caller_id, node_name)
 //   -> (code, statusMessage, URI)
-exports.lookupNode = async (req, res) => {
+exports.lookupNode = async function(req, res) {
   const [ callerPath, nodePath, ] = req.body.params
 
   // logTouch adds new rosnodes to collection so if
@@ -16,8 +16,8 @@ exports.lookupNode = async (req, res) => {
   //   * callerPath isnt in rosnode collection yet
   // getByPath & logTouch calls would be in race condition
   // -> await logTouch before calling getByPath
-  await coreUtil.logTouch(callerPath, null, req.ip)
-  const rosnode = await coreUtil.getByPath(nodePath)
+  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  const rosnode = await coreUtil.getByPath(this.db, nodePath)
 
   if (rosnode && rosnode.rosnodeUri) {
     return xmlrpc.sendResult([
@@ -40,10 +40,15 @@ exports.lookupNode = async (req, res) => {
 // use 'function (..) {..}' format to access master context thru 'this'
 exports.shutdown = async function (req, res) {
   const [ callerPath, msg, ] = req.body.params
-
   console.log(`vapor master received shutdown request: ${msg}`)
-
-  await coreUtil.logTouch(callerPath, null, req.ip)
+  if (this.config.no_shutdown){
+    return xmlrpc.sendResult([
+      -1, // error
+      `vapor master refusing to shutdown due to configuration override`, // status msg
+      undefined,
+    ], req, res)  
+  }
+  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
 
   xmlrpc.sendResult([
     1, // success code
@@ -62,7 +67,7 @@ exports.shutdown = async function (req, res) {
 exports.getUri = async function (req, res) {
   const [ callerPath, ] = req.body.params
 
-  await coreUtil.logTouch(callerPath, null, req.ip)
+  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
 
   return xmlrpc.sendResult([
     1, // success code
@@ -73,10 +78,10 @@ exports.getUri = async function (req, res) {
 
 // getPid(caller_id)
 //   -> (code, statusMessage, serverProcessPID)
-exports.getPid = async (req, res) => {
+exports.getPid = async function(req, res) {
   const [ callerPath, ] = req.body.params
 
-  await coreUtil.logTouch(callerPath, null, req.ip)
+  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
 
   return xmlrpc.sendResult([
     1, // success code
@@ -91,13 +96,15 @@ exports.getPid = async (req, res) => {
 //   - publishers -> [ [topicPath1, [topic1Pub1...topic1PubN]] ... ]
 //   - subscribers -> [ [topicPath1, [topic1Sub1...topic1SubN]] ... ]
 //   - services -> [ [servicePath1, [service1Pro1...service1ProN]] ... ]
-exports.getSystemState = async (req, res) => {
+exports.getSystemState = async function(req, res) {
   const [ callerPath, ] = req.body.params
 
   const [ , state, ] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
-    topicUtil.listXubs() // resolves to [pubs, subs]
-      .then(serviceUtil.listPros), // takes list & appends services
+    coreUtil.logTouch(this.db, callerPath, null, req.ip),
+    topicUtil.listXubs(this.db ) // resolves to [pubs, subs]
+      .then((data)=>{
+        return serviceUtil.listPros(this.db, data);
+      }), // takes list & appends services
   ])
 
   return xmlrpc.sendResult([

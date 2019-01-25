@@ -1,14 +1,16 @@
-const debug = require('debug')('test.rosnodejs-client.params')
+const debug = require('debug')('test:rosnodejs-client:params')
 const Server = require('../../src/server')
 const rosnodejs = require('rosnodejs')
 
 let nh;
 let server;
+let config = __TEST_MASTER_CONFIG__
+let ROS_MASTER_URI = __TEST_MASTER_CONFIG__.ROS_MASTER_URI
 
 beforeAll(async ()=>{
-   server = new Server();
+   server = new Server(config);
    await server.start();
-   nh = await rosnodejs.initNode('/test_rosnodejs_client', {rosMasterUri: "http://localhost:22114"});
+   nh = await rosnodejs.initNode('/test_rosnodejs_client', {rosMasterUri: ROS_MASTER_URI});
 })
 
 it('get param -> run_id', async ()=>{

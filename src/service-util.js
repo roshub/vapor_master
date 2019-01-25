@@ -1,10 +1,9 @@
 'use strict'
 
-const db = require('./model-interface.js')
 const debug = require('debug') ('vapor-master:service-util')
 
 // remove all service provider docs & resolve to # removed
-exports.clean = async () => {
+exports.clean = async (db) => {
   const found = await db.Vapor.servicePro.find().exec() // get all providers
 
   const removed = []
@@ -19,7 +18,7 @@ exports.clean = async () => {
 // takes (optional) list and appends sublist of services
 // returns promise that resolves to [(..listcontents,) services]
 // where services -> [ [servicePath1, [service1Pro1...service1ProN]] ... ]
-exports.listPros = async (list = []) => {
+exports.listPros = async (db, list = []) => {
   const servicePros = await db.Vapor.servicePro.find().exec()
 
   // loop thru providers and add to map by service path
@@ -35,7 +34,7 @@ exports.listPros = async (list = []) => {
 }
 
 // returns promise resolving to new service provider
-exports.createPro = (servicePath, serviceUri, proPath, proUri, proIpv4) => {
+exports.createPro = (db, servicePath, serviceUri, proPath, proUri, proIpv4) => {
   return db.Vapor.servicePro.create({
     servicePath: servicePath,
     serviceUri: serviceUri,
@@ -46,7 +45,7 @@ exports.createPro = (servicePath, serviceUri, proPath, proUri, proIpv4) => {
 }
 
 // resolves to list of deleted service providers
-exports.removePro = async (servicePath, serviceUri) => {
+exports.removePro = async (db, servicePath, serviceUri) => {
   const pros = await db.Vapor.servicePro.find()
     .where('servicePath').equals(servicePath)
     .where('serviceUri').equals(serviceUri).exec()
@@ -63,7 +62,7 @@ exports.removePro = async (servicePath, serviceUri) => {
 }
 
 // return promise that resolves to most recent provider at service path
-exports.getPro = (servicePath) => {
+exports.getPro = (db, servicePath) => {
   return db.Vapor.servicePro.findOne()
     .sort('-created').where('servicePath').equals(servicePath).exec()
 }

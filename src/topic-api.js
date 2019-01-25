@@ -7,21 +7,21 @@ const debug = require('debug') ('vapor-master:topic-api')
 
 // registerSubscriber(caller_id, topic, topicType, caller_api)
 //   -> (code, statusMessage, publishers)
-exports.registerSubscriber = async (req, res) => {
+exports.registerSubscriber = async function(req, res) {
   const [ callerPath, topicPath, topicType, callerUri, ] = req.body.params
 
   const [ , , , pubUris, ] = await Promise.all([
 
     // logTouch creates rosnode/topic if they dont exist
-    coreUtil.logTouch(callerPath, callerUri, req.ip),
+    coreUtil.logTouch(this.db, callerPath, callerUri, req.ip),
 
     // in rospy master first sub/pub to touch topic path sets type
     // seems to ignore mismatch tho?!
-    topicUtil.logTouch(topicPath, topicType, req.ip),
+    topicUtil.logTouch(this.db, topicPath, topicType, req.ip),
 
     // create subscriber & get list of publisher uris
-    topicUtil.createXub('sub', topicPath, callerPath, callerUri, req.ip),
-    topicUtil.getXubUris('pub', topicPath),
+    topicUtil.createXub(this.db, 'sub', topicPath, callerPath, callerUri, req.ip),
+    topicUtil.getXubUris(this.db, 'pub', topicPath),
   ])
 
   // rospy master topic subscription always succeeds
@@ -34,13 +34,13 @@ exports.registerSubscriber = async (req, res) => {
 
 // unregisterSubscriber(caller_id, topic, caller_api)
 //   -> (code, statusMessage, numUnsubscribed)
-exports.unregisterSubscriber = async (req, res) => {
+exports.unregisterSubscriber = async function(req, res) {
   const [ callerPath, topicPath, callerUri, ] = req.body.params
 
   const [ , , removed, ] = await Promise.all([
-    coreUtil.logTouch(callerPath, callerUri, req.ip),
-    topicUtil.logTouch(topicPath, null, req.ip),
-    topicUtil.removeXub('sub', callerUri, topicPath), // resolves to list
+    coreUtil.logTouch(this.db, callerPath, callerUri, req.ip),
+    topicUtil.logTouch(this.db, topicPath, null, req.ip),
+    topicUtil.removeXub(this.db, 'sub', callerUri, topicPath), // resolves to list
   ])
 
   if (removed.length > 0) {
@@ -62,26 +62,25 @@ exports.unregisterSubscriber = async (req, res) => {
 
 // registerPublisher(caller_id, topic, topicType, caller_api)
 //   -> (code, statusMessage, subscriberApis)
-exports.registerPublisher = async (req, res) => {
+exports.registerPublisher = async function(req, res) {
   const [ callerPath, topicPath, topicType, callerUri, ] = req.body.params
-
   const [ , , , subUris, ] = await Promise.all([
 
     // logTouch creates rosnode/topic if they dont exist
-    coreUtil.logTouch(callerPath, callerUri, req.ip),
+    coreUtil.logTouch(this.db, callerPath, callerUri, req.ip),
 
     // in rospy master first sub/pub to touch topic path sets type
     // seems to ignore mismatch tho?!
-    topicUtil.logTouch(topicPath, topicType, req.ip),
+    topicUtil.logTouch(this.db, topicPath, topicType, req.ip),
 
     // create publisher & get list of subscriber uris
-    topicUtil.createXub('pub', topicPath, callerPath, callerUri, req.ip),
-    topicUtil.getXubUris('sub', topicPath),
+    topicUtil.createXub(this.db, 'pub', topicPath, callerPath, callerUri, req.ip),
+    topicUtil.getXubUris(this.db, 'sub', topicPath),
   ])
 
   // update subscriber nodes asynchronously with list of pub uris
   setImmediate(() => {
-    topicUtil.updateSubs(topicPath, subUris)
+    topicUtil.updateSubs(this.db, topicPath, subUris)
   })
 
   // rospy master topic publisher registration always succeeds
@@ -94,13 +93,13 @@ exports.registerPublisher = async (req, res) => {
 
 // unregisterPublisher(caller_id, topic, caller_api)
 //   -> (code, statusMessage, numUnregistered)
-exports.unregisterPublisher = async (req, res) => {
+exports.unregisterPublisher = async function(req, res) {
   const [ callerPath, topicPath, callerUri, ] = req.body.params
 
   const [ , , removed, ] = await Promise.all([
-    coreUtil.logTouch(callerPath, callerUri, req.ip),
-    topicUtil.logTouch(topicPath, null, req.ip),
-    topicUtil.removeXub('pub', callerUri, topicPath), // resolves to list
+    coreUtil.logTouch(this.db, callerPath, callerUri, req.ip),
+    topicUtil.logTouch(this.db, topicPath, null, req.ip),
+    topicUtil.removeXub(this.db, 'pub', callerUri, topicPath), // resolves to list
   ])
 
   if (removed.length > 0) {
@@ -123,15 +122,15 @@ exports.unregisterPublisher = async (req, res) => {
 // getPublishedTopics(caller_id, subgraph)
 //   -> (code, statusMessage, [ [topic1, type1]...[topicN, typeN] ])
 // TODO -> full rospy master subpath behavior hasnt been implemented?
-exports.getPublishedTopics = async (req, res) => {
+exports.getPublishedTopics = async function(req, res) {
   const [ callerPath, subpath, ] = req.body.params
 
   const [ , topicPairs, ] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    coreUtil.logTouch(this.db, callerPath, null, req.ip),
 
     // getPubPairs resolves to -> [[topicPath, msgType], ..]
     // for topics that have at least one publisher registered
-    topicUtil.getPubPairs(subpath),
+    topicUtil.getPubPairs(this.db, subpath),
   ])
 
   return xmlrpc.sendResult([
@@ -144,12 +143,12 @@ exports.getPublishedTopics = async (req, res) => {
 // getTopicTypes(caller_id)
 //   -> (code, statusMessage, topicTypes)
 //   topicTypes is a list of [topicName, topicType] pairs
-exports.getTopicTypes = async (req, res) => {
+exports.getTopicTypes = async function(req, res) {
   const [ callerPath, ] = req.body.params
 
   const [ , topicPairs, ] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
-    topicUtil.getAllPairs(), // resolves to list
+    coreUtil.logTouch(this.db, callerPath, null, req.ip),
+    topicUtil.getAllPairs(this.db), // resolves to list
   ])
 
   return xmlrpc.sendResult([

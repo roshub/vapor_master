@@ -7,12 +7,12 @@ const debug = require('debug') ('vapor-master:service-api')
 
 // registerService(caller_id, service, service_api, caller_api)
 //   -> (code, statusMessage, ignore)
-exports.registerService = async (req, res) => {
+exports.registerService = async function(req, res) {
   const [callerPath, servicePath, serviceUri, callerUri] = req.body.params
 
   await Promise.all([
-    coreUtil.logTouch(callerPath, callerUri, req.ip), // creates node if new
-    serviceUtil.createPro(
+    coreUtil.logTouch(this.db, callerPath, callerUri, req.ip), // creates node if new
+    serviceUtil.createPro(this.db, 
       servicePath, serviceUri, callerPath, callerUri, req.ip),
   ])
 
@@ -26,17 +26,17 @@ exports.registerService = async (req, res) => {
 
 // unregisterService(caller_id, service, service_api, caller_api)
 //   -> (code, statusMessage, numUnregistered)
-exports.unregisterService = async (req, res) => {
+exports.unregisterService = async function(req, res) {
   const [callerPath, servicePath, serviceUri] = req.body.params
 
   const [, removed] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    coreUtil.logTouch(this.db, callerPath, null, req.ip),
 
     // removePro resolves to list of removed service providers
     //
     // rospy master does something more complex also referencing
     // the caller path, but there should only be one provider at a given uri
-    serviceUtil.removePro(servicePath, serviceUri),
+    serviceUtil.removePro(this.db, servicePath, serviceUri),
   ])
 
   if (removed.length > 0) {
@@ -58,14 +58,14 @@ exports.unregisterService = async (req, res) => {
 
 // lookupService(caller_id, service)
 //   -> (code, statusMessage, serviceUrl)
-exports.lookupService = async (req, res) => {
+exports.lookupService = async function(req, res) {
   const [callerPath, servicePath] = req.body.params
 
   const [, pro] = await Promise.all([
-    coreUtil.logTouch(callerPath, null, req.ip),
+    coreUtil.logTouch(this.db, callerPath, null, req.ip),
 
     // getPro resolves to most recently registered service provider at path
-    serviceUtil.getPro(servicePath),
+    serviceUtil.getPro(this.db, servicePath),
   ])
 
   // if a service provider was found return its service uri

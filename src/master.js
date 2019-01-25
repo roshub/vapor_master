@@ -4,8 +4,7 @@ const URL = require('url-parse')
 const xmlrpc = require('@roshub/express-xmlrpc')
 const coreUtil = require('./core-util.js')
 const debug = require('debug')('vapor-master:master')
-const Config = require('./config.js')
-const Model = require('./model-interface.js')
+const Model = require('./model/db')
 
 
 // ros master server express router
@@ -18,6 +17,7 @@ class Master {
     // * middleware parses req.body.method & req.body.params from body
     // * xmlrpc.serializeResponse() generates xml to pass to express res.send()
     options = options || {}
+    this.config = options.config || {};
 
     this.api = Object.assign({},
       require('./core-api.js'),
@@ -27,16 +27,21 @@ class Master {
     
     // call to update the value getUri() will return
     // parses uri into node url object
-    this.uri = options.uri || Config.read('ROS_MASTER_URI') || undefined
+    this.uri = this.config.ROS_MASTER_URI || undefined
+    this.db = new Model(this.config.db
+              , this.config.dboptions || undefined )
   }
 
+  start(){
+    return this.db.connect()
+  }
   setUri(uri){
     this.uri = new URL(uri);
   }
 
   // delete *all records* from backend
   async cleanDb() {
-    const count = await coreUtil.clean()
+    const count = await coreUtil.clean(this.db)
     console.log(`cleaning! ${count} records removed from db`)
   }
 

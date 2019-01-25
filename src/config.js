@@ -11,14 +11,15 @@ const sanitize = require('sanitize-filename')
 
 const logger = require('debug')('vapor-master:config');
 
-const DEFAULT_CONFIG = require('./default-config')
 var BASE_PATH = process.env.SNAP_COMMON || ((process.env.HOME) ? (process.env.HOME + '/.vapor-master') : '.' )
-
-
 
 class Config {
 
-  constructor(defaults){
+  constructor(defaults, whitelist){
+    this.whitelist = whitelist || [
+      'clean_db', 'db', 'dboptions', 'ROS_MASTER_URI', 'no_shutdown'
+    ]
+    defaults = defaults || {}
     this.basePath = defaults.basePath || BASE_PATH
     this.defaults = defaults || {}
     this.defaults.logicalSeparator = '.'
@@ -26,32 +27,36 @@ class Config {
 
   open () {
     this.touchDir('')
-
-    nconf.argv().env({logicalSeparator: '.'}).file({
+    
+    nconf.argv({whitelist: this.whitelist}).file({
       file: 'config.json',
       dir: this.basePath,
       search: true,
       logicalSeparator: '.'
-    }).defaults(this.defaults)
+    }).env({logicalSeparator: '.', whitelist: ['ROS_MASTER_URI']})
 
     logger(`config ready: ${this.basePath}/config.json`)
 
     return this
   }
 
-  static config(defaults){
-    let c = new Config(defaults)
+  static config(defaults, whitelist){
+    let c = new Config(defaults, whitelist)
     c.open()
 
     return c
   }
 
+  readAll(){
+    return nconf.get();
+  }
+  
   // Read config file as json
   read(key){
     logger('reading path: ' + key)
     let val = nconf.get(key)
 
-    logger(key+ ' = ', val)    
+    //logger(key+ ' = ', val)    
 
     return val
   }
@@ -186,17 +191,6 @@ class Config {
   }
 }
 
-const CONFIG_KEY = Symbol.for("app.vapormaster.config")
-
-var globalSymbols = Object.getOwnPropertySymbols(global)
-var hasConfig = (globalSymbols.indexOf(CONFIG_KEY) > -1)
 
 
-if(!hasConfig){
-  var config = Config.config(DEFAULT_CONFIG)
-  global[CONFIG_KEY] = {
-    config: config
-  }
-}
-
-module.exports = global[CONFIG_KEY].config
+module.exports = Config

@@ -1,12 +1,11 @@
 'use strict'
 
-const db = require('./model-interface.js')
 const debug = require('debug') ('vapor-master:param-util')
 const updateUtil = require('./update-util.js')
 const topicUtil = require('./topic-util.js')
 
 // remove all param & param sub docs & resolve to # removed
-exports.clean = async () => {
+exports.clean = async (db) => {
   const found = await Promise.all([
     db.Vapor.param.find().exec(), // get all params
     db.Vapor.paramSub.find().exec(), // get all param subscribers
@@ -25,13 +24,13 @@ exports.clean = async () => {
 
 // get most recent param at exact key path
 // ***not consistent with get()!***
-exports.getByKey = (keyPath) => {
+exports.getByKey = (db, keyPath) => {
   return db.Vapor.param.findOne()
     .sort('-created').where('keyPath').equals(keyPath).exec()
 }
 
 // get all params
-exports.getAllKeys = async () => {
+exports.getAllKeys = async (db) => {
   const params = await db.Vapor.param.find().exec()
 
   const keys = {}
@@ -42,8 +41,8 @@ exports.getAllKeys = async () => {
 }
 
 // find all params matching subpath ordered from oldest to newest
-exports.getBySubpath = (subpath) => {
-  const re = topicUtil.subpathRegEx(subpath)
+exports.getBySubpath = (db, subpath) => {
+  const re = topicUtil.subpathRegEx(db, subpath)
 
   return db.Vapor.param.find()
     .sort('created').where('keyPath').regex(re).exec()
@@ -51,7 +50,7 @@ exports.getBySubpath = (subpath) => {
 
 // find all params matching subpath and load them into a dictionary
 // load oldest params first so that newer values overwrite older values
-exports.get = async (keyPath) => {
+exports.get = async (db, keyPath) => {
 
   // assure key path has trailing slash
   const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
@@ -62,7 +61,7 @@ exports.get = async (keyPath) => {
   // getBySubpath delivers params sorted oldest -> newest
   // build param tree by assigning params to dict in order so that newer
   // params clobber older params
-  const params = await exports.getBySubpath(path)
+  const params = await exports.getBySubpath(db, path)
   const tree = {}
   
   debug('get', keyPath)
@@ -108,7 +107,7 @@ exports.get = async (keyPath) => {
 }
 
 // create new param sub & write to backend -> returns promise
-exports.createSub = (keyPath, subPath, subUri, subIP) => {
+exports.createSub = (db, keyPath, subPath, subUri, subIP) => {
   return db.Vapor.paramSub.create({
     keyPath: keyPath,
     subscriberPath: subPath,
@@ -118,7 +117,7 @@ exports.createSub = (keyPath, subPath, subUri, subIP) => {
 }
 
 // resolves to list of deleted xubs
-exports.removeSub = async (keyPath, subPath, subUri) => {
+exports.removeSub = async (db, keyPath, subPath, subUri) => {
   const subs = await db.Vapor.paramSub.find()
     .where('keyPath').equals(keyPath)
     .where('subscriberPath').equals(subPath)
@@ -136,7 +135,7 @@ exports.removeSub = async (keyPath, subPath, subUri) => {
   return Promise.all(removed) // resolve parallel backend removes
 }
 
-exports.removeByKey = async (keyPath) => {
+exports.removeByKey = async (db, keyPath) => {
   const params = await db.Vapor.param.find()
     .where('keyPath').equals(keyPath+ '/').exec()
 
@@ -150,7 +149,7 @@ exports.removeByKey = async (keyPath) => {
   return Promise.all(removed) // resolve parallel backend removes
 }
 
-exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
+exports.setByKey = (db, keyPath, value, creatorPath, creatorIpv4) => {
   const valueType = (value === null) ? 'null' :  ((Array.isArray(value)) ? 'array' : typeof value )
 
   const updateQuery = {
@@ -236,7 +235,7 @@ exports.setByKey = (keyPath, value, creatorPath, creatorIpv4) => {
 //   - set('/foot/left', {sock: 'green'}, ..)
 //   produce identical results -- a single new backend doc
 //   -> Param{ keyPath: '/foot/left/sock', value: 'green', ..}
-exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
+exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
 
   
   // assure key path has trailing slash
@@ -250,14 +249,14 @@ exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
 
     debug('set typeof value is ', typeof value)
 
-    await exports.setByKey(path, value, creatorPath, creatorIpv4)
+    await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
 
   // for object make recursive call for each [subkey, subvalue] pair
   } else if (typeof value === 'object') {
 
     if(Array.isArray(value)){
       debug('set typeof value is array')
-      await exports.setByKey(path, value, creatorPath, creatorIpv4)
+      await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
     }
     else{
       debug('set typeof value is object')
@@ -266,7 +265,7 @@ exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
 
       for (let [ subkey, subvalue, ] of Object.entries(value)) {
 
-        calls.push( exports.set(path + subkey, subvalue, creatorPath, creatorIpv4) )
+        calls.push( exports.set(db, path + subkey, subvalue, creatorPath, creatorIpv4) )
       }
 
       await Promise.all(calls)
@@ -279,22 +278,22 @@ exports.set = async (keyPath, value, creatorPath, creatorIpv4) => {
 
   // on success async update subs
   setImmediate(() => {
-    exports.updateSubs(path, value)
+    exports.updateSubs(db, path, value)
   })
 }
 
 // check for any subscribers to key path & update
 // call is asynchronous dont need to wait for promises to resolve
-exports.updateSubs = async (keyPath, value) => {
-  const subs = await exports.getSubs(keyPath)
+exports.updateSubs = async (db, keyPath, value) => {
+  const subs = await exports.getSubs(db, keyPath)
 
   for (const sub of subs) {
-    updateUtil.updateParamSub(sub.subscriberUri, keyPath, value)
+    updateUtil.updateParamSub(db, sub.subscriberUri, keyPath, value)
   }
 }
 
 // get subscribers to key path
-exports.getSubs = (keyPath) => {
+exports.getSubs = (db, keyPath) => {
   return db.Vapor.paramSub.find()
     .where('keyPath').equals(keyPath).exec()
 }

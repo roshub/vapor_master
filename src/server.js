@@ -2,8 +2,6 @@
 const xmlrpc = require('@roshub/express-xmlrpc')
 const express = require('express')
 const morgan = require('morgan')
-const Model = require('./model-interface.js')
-const Config = require('./config.js')
 // singleton ros master server
 const Master = require('./master.js')
 const uuidv1 = require('uuid/v1')
@@ -16,9 +14,10 @@ class Server {
     this.app = express()
     this.server = null
     this.errorHandlerTimer = null
-    this.master = new Master()
     // setup request logging
     //app.use(morgan('combined'))
+    this.config = config
+    this.master = new Master({config: this.config});
 
     // xmlrpc message parsing middleware
     // parses request stream & sets request.body.method & request.body.params
@@ -54,18 +53,18 @@ class Server {
     let promises = []
 
     // parse uri string for server to listen at
-    this.master.setUri(Config.read('ROS_MASTER_URI'))
+    this.master.setUri(this.config.ROS_MASTER_URI)
 
     // if clean database flag is set clear all data from db
-    if (Config.read('clean-db')) {
+    if (this.config.clean_db) {
       this.master.cleanDb().then(()=>{
         // set run_id
-        paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1")
+        paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1")
       })
     }
     else{
       // set run_id
-      promises.push( paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1") )
+      promises.push( paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1") )
     }
 
     
@@ -83,9 +82,7 @@ class Server {
         debug(`vapor master listening at '${this.master.uri.href}'`)
         this.server.removeAllListeners('error')
 
-        let dbPromise = Model.connect().then(()=>{
-          debug("Connected to Database")
-        })
+        let dbPromise = this.master.start();
 
         if(!retry){ return resolve(dbPromise) }
       })
