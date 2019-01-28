@@ -27,15 +27,23 @@ class Config {
 
   open () {
     this.touchDir('')
-    
-    nconf.argv({whitelist: this.whitelist}).file({
-      file: 'config.json',
+    let file_name = 'config.json'
+    nconf.argv({whitelist: this.whitelist})
+    const config_file = nconf.get('config')
+    if (config_file){
+      const file_path = Path.parse(config_file)
+       file_name = file_path.base
+       this.basePath = file_path.dir
+    }
+    nconf.file({
+      file: file_name,
       dir: this.basePath,
-      search: true,
       logicalSeparator: '.'
-    }).env({logicalSeparator: '.', whitelist: ['ROS_MASTER_URI']})
+    })
+    
+    nconf.env({logicalSeparator: '.', whitelist: this.whitelist})
 
-    logger(`config ready: ${this.basePath}/config.json`)
+    logger(`config ready: ${this.basePath}${file_name}`)
 
     return this
   }

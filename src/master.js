@@ -28,8 +28,7 @@ class Master {
     // call to update the value getUri() will return
     // parses uri into node url object
     this.uri = this.config.ROS_MASTER_URI || undefined
-    this.db = new Model(this.config.db
-              , this.config.dboptions || undefined )
+    this.db = new Model(this.config.db, this.config.dboptions || undefined )
   }
 
   start(){
