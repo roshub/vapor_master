@@ -5,15 +5,15 @@ const URL = require('url-parse')
 const config = Config.config();
 
 const defaults= {
-  clean_db: true,
+  'clean-db': true,
   db: 'mongodb://localhost:27017/vapor_master',
   ROS_MASTER_URI: 'http://localhost:11311'
 }
 
 if(config.read('help') || config.read('h')){
   console.log(`Usage vapor-master`)
-  console.log(`\t`, `--clean_db`)
-  console.log(`\t`, `--no_clean_db`)
+  console.log(`\t`, `--clean-db`)
+  console.log(`\t`, `--no-clean-db`)
   console.log(`\t`, `--db=[mongo-uri]`)
   console.log(`\t`, `--dboptions=[mongo-options]`)
   console.log(`\t`, `--ROS_MASTER_URI=[ros-master-uri]`)
@@ -24,19 +24,27 @@ if(config.read('help') || config.read('h')){
 let options = config.readAll() || {};
 delete options._
 delete options['$0']
+
+if (options['no-clean-db'] || options['no-clean-db'] === false){
+  if(!options['clean-db'] && options['clean-db'] !== false ){
+    options['clean-db'] = !options['no-clean-db'];
+  }
+  delete options['no-clean-db']
+}
+
 if (Object.keys(options).length == 0){
   options = defaults
 } else if (Object.keys(options).length == 1) {
-  if (options.ROS_MASTER_URI || options.ROS_MASTER_URI == ''){
+  if (options.hasOwnProperty('ROS_MASTER_URI')){
     if (options.ROS_MASTER_URI == ''){
       options.ROS_MASTER_URI = defaults.ROS_MASTER_URI
     }
     options.db = defaults.db;
-    options.clean_db = true;
+    options['clean-db'] = true;
   }
 } else if (Object.keys(options).length == 2) {
-  if ((options.ROS_MASTER_URI || options.ROS_MASTER_URI == '') &&
-      (options.clean_db || options.no_clean_db)){
+  if (options.hasOwnProperty('ROS_MASTER_URI') &&
+      options.hasOwnProperty('clean-db')){
     options.db = defaults.db;
     if (options.ROS_MASTER_URI == ''){
       options.ROS_MASTER_URI = defaults.ROS_MASTER_URI

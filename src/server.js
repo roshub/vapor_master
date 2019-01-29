@@ -56,7 +56,7 @@ class Server {
     this.master.setUri(this.config.ROS_MASTER_URI)
 
     // if clean database flag is set clear all data from db
-    if (this.config.clean_db) {
+    if (this.config['clean-db']) {
       this.master.cleanDb().then(()=>{
         // set run_id
         paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1")

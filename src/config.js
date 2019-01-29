@@ -17,7 +17,7 @@ class Config {
 
   constructor(defaults, whitelist){
     this.whitelist = whitelist || [
-      'clean_db', 'db', 'dboptions', 'ROS_MASTER_URI', 'no_shutdown'
+      'clean-db', 'db', 'dboptions', 'ROS_MASTER_URI', 'no-shutdown'
     ]
     defaults = defaults || {}
     this.basePath = defaults.basePath || BASE_PATH
@@ -28,23 +28,29 @@ class Config {
   open () {
     this.touchDir('')
     let file_name = 'config.json'
-    nconf.argv({whitelist: this.whitelist})
+    nconf.argv()
     const config_file = nconf.get('config')
     if (config_file){
       const file_path = Path.parse(config_file)
-       file_name = file_path.base
-       this.basePath = file_path.dir
+      file_name = file_path.base
+      if (!Path.isAbsolute(config_file)){
+        this.basePath = process.cwd() + '/' + file_path.dir
+      } else {
+        this.basePath = file_path.dir
+      }
     }
     nconf.file({
       file: file_name,
       dir: this.basePath,
-      logicalSeparator: '.'
+      search: true,
+      logicalSeparator: '.', 
     })
-    
-    nconf.env({logicalSeparator: '.', whitelist: this.whitelist})
+    nconf.env({
+      logicalSeparator: '.', 
+      whitelist: this.whitelist,
+    })
 
     logger(`config ready: ${this.basePath}${file_name}`)
-
     return this
   }
 

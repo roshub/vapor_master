@@ -41,7 +41,7 @@ exports.lookupNode = async function(req, res) {
 exports.shutdown = async function (req, res) {
   const [ callerPath, msg, ] = req.body.params
   console.log(`vapor master received shutdown request: ${msg}`)
-  if (this.config.no_shutdown){
+  if (this.config['no-shutdown'] || this.config['shutdown'] === false){
     return xmlrpc.sendResult([
       -1, // error
       `vapor master refusing to shutdown due to configuration override`, // status msg

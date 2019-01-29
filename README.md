@@ -61,11 +61,12 @@ All command line flags are accessible via the snap as well:
 
 # Configuring
 
-Vapor can be configure in three was with highest precedence in order:
+Vapor can be configured in four ways with highest precedence in order:
 
 1. Command line flags
-2. Environment variables
-3. Configuration file
+2. Configuration file
+3. Environment variables
+4. Defaults
 
 ## Command Line Flags
 
@@ -73,21 +74,18 @@ Vapor can be configure in three was with highest precedence in order:
 Usage vapor-master
   --clean-db
   --no-clean-db
+  --no-shutdown
   --db=[mongo-uri]
+  --dboptions={[mongo-db-options]}
   --ROS_MASTER_URI=[ros-master-uri]
+  --config=[configuration-file]
 ```
-
-## Environment Variables
-
- * $clean-db
- * $no-clean-db
- * $db=[mongodb-uri]
- * $ROS_MASTER_URI
 
 ## Configuration File
 
 Vapor looks for configuration files in:
 
+ * The file defined in the command line flag `--config`
  * `$SNAP_COMMON/config.json`
    * If $SNAP_COMMON is defined
  * `$HOME/.vapor-master/config.json`
@@ -95,6 +93,20 @@ Vapor looks for configuration files in:
  * `./config.json`
     * If neither $SNAP_COMMON or $HOME are defined
 
+## Environment Variables
+
+ * $clean-db
+ * $no-clean-db
+ * $no-shutdown
+ * $db=[mongodb-uri]
+ * $dboptions={[mongo-db-options]}
+ * $ROS_MASTER_URI
+
+## Defaults
+
+ * clean-db: `true`
+ * db: `mongodb://localhost:27017/vapor_master`
+ * ROS_MASTER_URI: `http://localhost:11311`
 
 # Developing
 
@@ -110,6 +122,13 @@ To interactively develop run:
 yarn
 yarn watch
 ```
+# Tests
+
+To run tests, first run `catkin_make` in the `tests/native_client` folder, and then source the file `tests/native_client/devel/setup.bash`.
+
+Then run:
+
+`yarn test`
 
 ## Roadmap
 
