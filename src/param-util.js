@@ -25,8 +25,9 @@ exports.clean = async (db) => {
 // get most recent param at exact key path
 // ***not consistent with get()!***
 exports.getByKey = (db, keyPath) => {
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
   return db.Vapor.param.findOne()
-    .sort('-created').where('keyPath').equals(keyPath).exec()
+    .sort('-created').where('keyPath').equals(path).exec()
 }
 
 // get all params
@@ -108,8 +109,9 @@ exports.get = async (db, keyPath) => {
 
 // create new param sub & write to backend -> returns promise
 exports.createSub = (db, keyPath, subPath, subUri, subIP) => {
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
   return db.Vapor.paramSub.create({
-    keyPath: keyPath,
+    keyPath: path,
     subscriberPath: subPath,
     subscriberUri: subUri,
     subscriberIpv4: subIP
@@ -118,8 +120,10 @@ exports.createSub = (db, keyPath, subPath, subUri, subIP) => {
 
 // resolves to list of deleted xubs
 exports.removeSub = async (db, keyPath, subPath, subUri) => {
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
+
   const subs = await db.Vapor.paramSub.find()
-    .where('keyPath').equals(keyPath)
+    .where('keyPath').equals(path)
     .where('subscriberPath').equals(subPath)
     .where('subscriberUri').equals(subUri).exec()
 
@@ -129,22 +133,24 @@ exports.removeSub = async (db, keyPath, subPath, subUri) => {
   }
   if (removed.length > 1) {
     console.log(
-      `WARNING: removed multiple subs at '${subPath}' for param '${keyPath}'`)
+      `WARNING: removed multiple subs at '${subPath}' for param '${path}'`)
   }
 
   return Promise.all(removed) // resolve parallel backend removes
 }
 
 exports.removeByKey = async (db, keyPath) => {
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
+
   const params = await db.Vapor.param.find()
-    .where('keyPath').equals(keyPath+ '/').exec()
+    .where('keyPath').equals(path).exec()
 
   const removed = []
   for (const param of params) {
     removed.push(param.remove()) // init parallel backend removal of matches
   }
   if (removed.length > 1) {
-    console.log(`WARNING: removed multiple params at '${keyPath}'`)
+    console.log(`WARNING: removed multiple params at '${path}'`)
   }
   return Promise.all(removed) // resolve parallel backend removes
 }
@@ -240,7 +246,7 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
   
   // assure key path has trailing slash
   const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
-
+  debug('set ' + keyPath)
   // null, strings, numbers & booleans can be leaf values
   if (value === null
       || typeof value === 'string'
@@ -286,14 +292,17 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
 // call is asynchronous dont need to wait for promises to resolve
 exports.updateSubs = async (db, keyPath, value) => {
   const subs = await exports.getSubs(db, keyPath)
-
+  debug("number of Param subs to be updated for " + keyPath + ": " + subs.length)
   for (const sub of subs) {
-    updateUtil.updateParamSub(db, sub.subscriberUri, keyPath, value)
+    debug("Updating subscriber " + sub.subscriberPath + " to param " + keyPath + " with value " + value)
+    updateUtil.updateParamSub(db, sub.subscriberUri, sub.subscriberPath, keyPath, value)
   }
 }
 
 // get subscribers to key path
 exports.getSubs = (db, keyPath) => {
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
+
   return db.Vapor.paramSub.find()
-    .where('keyPath').equals(keyPath).exec()
+    .where('keyPath').equals(path).exec()
 }

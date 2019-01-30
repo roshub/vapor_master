@@ -119,10 +119,10 @@ exports.searchParam = async function(req, res) {
 //   -> (code, statusMessage, parameterValue)
 exports.subscribeParam = async function(req, res) {
   const [callerPath, callerUri, keyPath] = req.body.params
+  debug(`${callerPath} is subscribing to ${keyPath}`)
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  // await paramUtil.createSub(this.db, keyPath, callerPath, callerUri, req.ip),
-  await paramUtil.createSub(this.db, keyPath)
+  await paramUtil.createSub(this.db, keyPath, callerPath, callerUri, req.ip)
   const param = await paramUtil.get(this.db, keyPath)
 
   // return empty dict if no value found for param
@@ -159,7 +159,7 @@ exports.unsubscribeParam = async function(req, res) {
 exports.getParamNames = async function(req, res) {
   const [callerPath] = req.body.params
 
-  // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  //await coreUtil.logTouch(this.db, callerPath, null, req.ip)
   const keys = await paramUtil.getAllKeys(this.db, )
 
   return xmlrpc.sendResult([

@@ -41,14 +41,17 @@ exports.lookupNode = async function(req, res) {
 exports.shutdown = async function (req, res) {
   const [ callerPath, msg, ] = req.body.params
   console.log(`vapor master received shutdown request: ${msg}`)
+
+  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  
   if (this.config['no-shutdown'] || this.config['shutdown'] === false){
+    debug("vapor master refusing to shutdown")
     return xmlrpc.sendResult([
       -1, // error
       `vapor master refusing to shutdown due to configuration override`, // status msg
       undefined,
     ], req, res)  
   }
-  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
 
   xmlrpc.sendResult([
     1, // success code

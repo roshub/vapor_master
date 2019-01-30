@@ -17,7 +17,7 @@ if(config.read('help') || config.read('h')){
   console.log(`\t`, `--db=[mongo-uri]`)
   console.log(`\t`, `--dboptions=[mongo-options]`)
   console.log(`\t`, `--ROS_MASTER_URI=[ros-master-uri]`)
-  console.log(`\t`, `--no_shutdown`)
+  console.log(`\t`, `--no-shutdown`)
   process.exit(0)
 }
 
@@ -34,23 +34,17 @@ if (options['no-clean-db'] || options['no-clean-db'] === false){
 
 if (Object.keys(options).length == 0){
   options = defaults
-} else if (Object.keys(options).length == 1) {
-  if (options.hasOwnProperty('ROS_MASTER_URI')){
-    if (options.ROS_MASTER_URI == ''){
-      options.ROS_MASTER_URI = defaults.ROS_MASTER_URI
-    }
-    options.db = defaults.db;
-    options['clean-db'] = true;
+} else {
+  if (!options.hasOwnProperty('ROS_MASTER_URI') || options.ROS_MASTER_URI === ''){
+    options.ROS_MASTER_URI = defaults.ROS_MASTER_URI
   }
-} else if (Object.keys(options).length == 2) {
-  if (options.hasOwnProperty('ROS_MASTER_URI') &&
-      options.hasOwnProperty('clean-db')){
-    options.db = defaults.db;
-    if (options.ROS_MASTER_URI == ''){
-      options.ROS_MASTER_URI = defaults.ROS_MASTER_URI
-    }
+  if (!options.hasOwnProperty('clean-db')){
+    options['clean-db'] = defaults['clean-db']
   }
-}
+  if (!options.hasOwnProperty('db')){
+    options.db = defaults.db
+  }
+} 
 
 let printoptions = Object.assign({},options)
 delete printoptions.dboptions;

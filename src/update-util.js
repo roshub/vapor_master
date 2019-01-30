@@ -2,6 +2,7 @@
 
 const xmlrpc = require('@roshub/express-xmlrpc')
 const coreUtil = require('./core-util')
+const paramUtil = require('./param-util')
 const debug = require('debug') ('vapor-master:update-util')
 
 // make xmlrpc publisherUpdate call to subscriber uri
@@ -26,7 +27,7 @@ exports.updateTopicSub = (db, subUri, topicPath, pubUris) => {
       }
 
       debug(`updated sub '${subUri}' to topic '${topicPath}'`)
-
+      
       // log successful touch to track rosnode lifecycle
       return coreUtil.logTouch(db, null, subUri, '0.0.0.0') // TODO -> get node ip
     }
@@ -34,8 +35,7 @@ exports.updateTopicSub = (db, subUri, topicPath, pubUris) => {
 }
 
 // make call to paramUpdate(caller_id, parameter_key, parameter_value)
-exports.updateParamSub = (db, subUri, keyPath, value) => {
-
+exports.updateParamSub = (db, subUri, subPath, keyPath, value) => {
   // get xmlrpc client connection to subscriber uri
   const client = xmlrpc.createClient(subUri)
 
@@ -43,9 +43,9 @@ exports.updateParamSub = (db, subUri, keyPath, value) => {
   //  -> http://wiki.ros.org/ROS/Slave_API
   client.methodCall('paramUpdate', ['/', keyPath, value],
     (error, value) => {
-
       // on thrown error or failed xmlrpc response log failure to backend
-      if (error !== null) {
+      if (error) {
+        paramUtil.removeSub(db, keyPath, subPath, subUri);
         return coreUtil.logFail(db, 
           subUri, `error updating param '${keyPath}'`, error)
       }
