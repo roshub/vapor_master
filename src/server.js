@@ -2,10 +2,8 @@
 const xmlrpc = require('@roshub/express-xmlrpc')
 const express = require('express')
 const morgan = require('morgan')
-const Model = require('./model-interface.js')
-const Config = require('./config.js')
 // singleton ros master server
-const master = require('./master.js')
+const Master = require('./master.js')
 const uuidv1 = require('uuid/v1')
 const paramUtil = require('./param-util.js')
 const debug = require('debug')('vapor-master:server')
@@ -16,9 +14,10 @@ class Server {
     this.app = express()
     this.server = null
     this.errorHandlerTimer = null
-
     // setup request logging
     //app.use(morgan('combined'))
+    this.config = config
+    this.master = new Master({config: this.config});
 
     // xmlrpc message parsing middleware
     // parses request stream & sets request.body.method & request.body.params
@@ -29,7 +28,7 @@ class Server {
     // calls xmlrpc.serializeResponse() to generate response from return values
     this.app.post(
       '*', 
-      xmlrpc.apiHandler(master.api, master, master.onError, master.onMiss)
+      xmlrpc.apiHandler(this.master.api, this.master, this.master.onError, this.master.onMiss)
     )
   }
 
@@ -54,18 +53,18 @@ class Server {
     let promises = []
 
     // parse uri string for server to listen at
-    master.setUri(Config.read('ROS_MASTER_URI'))
+    this.master.setUri(this.config.ROS_MASTER_URI)
 
     // if clean database flag is set clear all data from db
-    if (Config.read('clean-db')) {
-      master.cleanDb().then(()=>{
+    if (this.config['clean-db']) {
+      this.master.cleanDb().then(()=>{
         // set run_id
-        paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1")
+        paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1")
       })
     }
     else{
       // set run_id
-      promises.push( paramUtil.set("/run_id", uuidv1(), "/", "127.0.0.1") )
+      promises.push( paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1") )
     }
 
     
@@ -73,19 +72,17 @@ class Server {
     let serverStart = new Promise((resolve,reject)=>{
 
 
-      this.server = this.app.listen(master.uri.port, master.uri.hostname, ()=>{
+      this.server = this.app.listen(this.master.uri.port, this.master.uri.hostname, ()=>{
         //debug('server listening')
         //debug('address', this.server.address())
         clearTimeout(this.errorHandlerTimer)
         this.errorHandlerTimer = null
 
 
-        debug(`vapor master listening at '${master.uri.href}'`)
+        debug(`vapor master listening at '${this.master.uri.href}'`)
         this.server.removeAllListeners('error')
 
-        let dbPromise = Model.connect().then(()=>{
-          debug("Connected to Database")
-        })
+        let dbPromise = this.master.start();
 
         if(!retry){ return resolve(dbPromise) }
       })
@@ -124,7 +121,7 @@ class Server {
     return new Promise((resolve, reject)=>{
       if(!this.server || !this.server.listening){ return resolve() }
 
-      this.server.stop((err)=>{
+      this.server.close((err)=>{
         if(!err){
           debug('stopped server')
           return resolve()

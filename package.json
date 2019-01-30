@@ -1,12 +1,12 @@
 {
   "name": "vapor-master",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "./dist/vapor_master.js",
   "directories": {
     "js": "js"
   },
   "scripts": {
-    "test": "./node_modules/.bin/eslint ./",
+    "test": "npx jest --verbose --config ./tests/jest.config.js --detectOpenHandles --runInBand --forceExit --bail",
     "start": "node ./dist/vapor_master.js",
     "watch": "DEBUG=vapor-master.* nodemon index.js",
     "prepare-catkin": "./node_modules/webpack/bin/webpack.js --config webpack.dev.js",
@@ -25,11 +25,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime": "^7.1.2",
+    "@roshub/express-xmlrpc": "^0.4.2",
     "bossy": "^4.0.1",
     "cachegoose": "^7.1.0",
     "debug": "^3.1.0",
     "express": "^4.16.2",
-    "@roshub/express-xmlrpc": "^0.4.2",
     "mkdirp": "^0.5.1",
     "mongoose": "5.2.7",
     "mongoose-schema-jsonschema": "^1.1.15",
@@ -45,12 +45,20 @@
     "@babel/core": "^7.0.0",
     "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
+    "await-exec": "^0.1.2",
     "babel-loader": "^8.0.4",
+    "jest": "23.6.0",
+    "jest-environment-node": "23.4.0",
+    "mongodb-memory-server": "^3.0.0",
+    "rosnodejs": "^3.0.0",
     "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2",
     "webpack-node-externals": "^1.7.2",
     "webpack-tree-dependency": "^1.1.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "resolutions": {
     "event-stream": "3.3.5"

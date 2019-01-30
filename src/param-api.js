@@ -7,11 +7,11 @@ const debug = require('debug') ('vapor-master:param-api')
 
 // hasParam(caller_id, key)
 //   -> (code, statusMessage, hasParam)
-exports.hasParam = async (req, res, next) => {
+exports.hasParam = async function(req, res, next) {
   const [callerPath, keyPath] = req.body.params
 
-  // await coreUtil.logTouch(callerPath, null, req.ip)
-  const param = await paramUtil.get(keyPath)
+  // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  const param = await paramUtil.get(this.db, keyPath)
 
   // test for leaf param (null | string | number | boolean | array)
   const has = (param === null
@@ -31,13 +31,13 @@ exports.hasParam = async (req, res, next) => {
 
 // getParam(caller_id, key)
 //   -> (code, statusMessage, parameterValue)
-exports.getParam = async (req, res) => {
+exports.getParam = async function(req, res) {
   const [callerPath, keyPath] = req.body.params
 
   debug(keyPath)
 
-  // await coreUtil.logTouch(callerPath, null, req.ip)
-  const param = await paramUtil.get(keyPath)
+  // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  const param = await paramUtil.get(this.db, keyPath)
 
   // if no param found send error response (to follow rospy master)
   if (param === undefined) {
@@ -62,14 +62,14 @@ exports.getParam = async (req, res) => {
 
 // setParam(caller_id, key, value)
 //   -> (code, statusMessage, ignore)
-exports.setParam = async (req, res) => {
+exports.setParam = async function(req, res) {
   const [callerPath, keyPath, value] = req.body.params
   debug(`callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
 
   debug(req.body.params)
 
-  //await coreUtil.logTouch(callerPath, null, req.ip)
-  await paramUtil.set(keyPath, value, callerPath, req.ip) // also updates subs
+  //await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  await paramUtil.set(this.db, keyPath, value, callerPath, req.ip) // also updates subs
 
 
   debug("goodbye", keyPath)
@@ -83,11 +83,11 @@ exports.setParam = async (req, res) => {
 
 // deleteParam(caller_id, key)
 //   -> (code, statusMessage, ignore)
-exports.deleteParam = async (req, res) => {
+exports.deleteParam = async function(req, res) {
   const [callerPath, keyPath] = req.body.params
 
-  // await coreUtil.logTouch(callerPath, null, req.ip)
-  const param = await paramUtil.removeByKey(keyPath)
+  // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  const removed = await paramUtil.removeByKey(this.db, keyPath)
 
   // rospy implementation returns 1 on successful deletion & -1 if not set
   if (removed.length > 0) {
@@ -107,23 +107,23 @@ exports.deleteParam = async (req, res) => {
 
 // searchParam(caller_id, key)
 //   -> (code, statusMessage, foundKey)
-exports.searchParam = async (req, res) => {
+exports.searchParam = async function(req, res) {
   const [callerPath] = req.body.params
 
-  //coreUtil.logTouch(callerPath, null, req.ip)
+  //coreUtil.logTouch(this.db, callerPath, null, req.ip)
 
   throw new Error('searchParam not implemented')
 }
 
 // subscribeParam(caller_id, caller_api, key)
 //   -> (code, statusMessage, parameterValue)
-exports.subscribeParam = async (req, res) => {
+exports.subscribeParam = async function(req, res) {
   const [callerPath, callerUri, keyPath] = req.body.params
+  debug(`${callerPath} is subscribing to ${keyPath}`)
 
-  // await coreUtil.logTouch(callerPath, null, req.ip)
-  // await paramUtil.createSub(keyPath, callerPath, callerUri, req.ip),
-  await paramUtil.createSub(keyPath)
-  const param = await paramUtil.get(keyPath)
+  // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  await paramUtil.createSub(this.db, keyPath, callerPath, callerUri, req.ip)
+  const param = await paramUtil.get(this.db, keyPath)
 
   // return empty dict if no value found for param
   // spec -> http://wiki.ros.org/ROS/Parameter%20Server%20API
@@ -138,12 +138,12 @@ exports.subscribeParam = async (req, res) => {
 
 // unsubscribeParam(caller_id, caller_api, key)
 //   -> (code, statusMessage, numUnsubscribed)
-exports.unsubscribeParam = async (req, res) => {
+exports.unsubscribeParam = async function(req, res) {
   const [callerPath, callerUri, keyPath] = req.body.params
 
   
-  paramUtil.removeSub(keyPath, callerPath, callerUri)
-  const removed = await paramUtil.get(keyPath)
+  paramUtil.removeSub(this.db, keyPath, callerPath, callerUri)
+  const removed = await paramUtil.get(this.db, keyPath)
 
   
 
@@ -156,11 +156,11 @@ exports.unsubscribeParam = async (req, res) => {
 
 // getParamNames(caller_id)
 //   -> (code, statusMessage, parameterNameList)
-exports.getParamNames = async (req, res) => {
+exports.getParamNames = async function(req, res) {
   const [callerPath] = req.body.params
 
-  // await coreUtil.logTouch(callerPath, null, req.ip)
-  const keys = await paramUtil.getAllKeys()
+  //await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  const keys = await paramUtil.getAllKeys(this.db, )
 
   return xmlrpc.sendResult([
     1, // success code

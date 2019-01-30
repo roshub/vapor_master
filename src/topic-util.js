@@ -1,11 +1,10 @@
 'use strict'
 
-const db = require('./model-interface.js')
 const updateUtil = require('./update-util')
 const debug = require('debug') ('vapor-master:topic-util')
 
 // build regex to match given root subpath
-exports.subpathRegEx = (subpath) => {
+exports.subpathRegEx = (db, subpath) => {
 
   if (subpath[0] !== '/') {
     throw new Error(`subpath must be root ('/..'): '${subpath}'`)
@@ -24,7 +23,7 @@ exports.subpathRegEx = (subpath) => {
 }
 
 // remove all topic & topic xub docs & resolve to # removed
-exports.clean = async () => {
+exports.clean = async (db ) => {
   const found = await Promise.all([
     db.Vapor.topic.find().exec(), // get all topics
     db.Vapor.topicXub.find().exec(), // get all topic pubs/subs
@@ -43,10 +42,10 @@ exports.clean = async () => {
 
 // log method call to vapor master touching a topic
 // if there is no record of topic with given path create it
-exports.logTouch = async (topicPath, topicType, ipv4) => {
+exports.logTouch = async (db, topicPath, topicType, ipv4) => {
   debug(`topic at path '${topicPath}' touched from ip '${ipv4}'`)
 
-  let topic = await exports.getByPath(topicPath) // try backend for doc
+  let topic = await exports.getByPath(db, topicPath) // try backend for doc
 
   if (!topic) { // if doc for topic path isnt in collection create it
     topic = new db.Vapor.topic({ topicPath, })
@@ -59,7 +58,7 @@ exports.logTouch = async (topicPath, topicType, ipv4) => {
   await topic.save() // wait for backend write to resolve
 }
 
-exports.getByPath = async (path) => {
+exports.getByPath = async (db, path) => {
 
   // reverse sort by creation date to keep behavior deterministic
   // there *should* only be one but that isnt enforced
@@ -75,11 +74,11 @@ exports.getByPath = async (path) => {
   return topics[0] // return first topic (newest)
 }
 
-exports.getPubsBySubpath = (subpath) => {
+exports.getPubsBySubpath = (db, subpath) => {
 
   // if subpath given build regex to match subpath at beginning of path
   if (subpath) {
-    const re = exports.subpathRegEx(subpath)
+    const re = exports.subpathRegEx(db, subpath)
 
     return db.Vapor.topicXub.find()
       .where('role').equals('pub').where('topicPath').regex(re).exec()
@@ -92,14 +91,14 @@ exports.getPubsBySubpath = (subpath) => {
 }
 
 // get list of [topicPath, msgType] pairs for topics with at least 1 pub
-exports.getPubPairs = (subpath) => {
-  return exports.getPubsBySubpath(subpath)
+exports.getPubPairs = (db, subpath) => {
+  return exports.getPubsBySubpath(db, subpath)
     .then(exports.getTopicsFromXubs)
     .then(exports.getPairsFromTopics)
 }
 
 // resolve from a list of xubs to a list of (unique) topics
-exports.getTopicsFromXubs = (xubs = []) => {
+exports.getTopicsFromXubs = (db, xubs = []) => {
 
   // build a list of unique topic paths from passed xubs list
   const paths = {}
@@ -110,14 +109,14 @@ exports.getTopicsFromXubs = (xubs = []) => {
   // build a list of promises that will resolve to a topic for each path
   const topics = []
   for (const path of Object.keys(paths)) {
-    topics.push(exports.getByPath(path))
+    topics.push(exports.getByPath(db, path))
   }
 
   return Promise.all(topics)
 }
 
 // resolves to a list with a [topicPath, msgType] pair for each given topic
-exports.getPairsFromTopics = (topics = []) => {
+exports.getPairsFromTopics = (db, topics = []) => {
   const pairs = []
   for (const topic of topics) {
     pairs.push([ topic.topicPath, topic.msgType, ])
@@ -126,7 +125,7 @@ exports.getPairsFromTopics = (topics = []) => {
 }
 
 // resolves to a list of [topicPath, msgType] pairs for all topics
-exports.getAllPairs = () => {
+exports.getAllPairs = (db) => {
   return db.Vapor.topic.find().exec()
     .then(exports.getPairsFromTopics)
 }
@@ -135,7 +134,7 @@ exports.getAllPairs = () => {
 // returns promise that resolves to [(..listcontents,) pubs, subs]
 // where pubs -> [ [topicPath1, [topic1PubPath1...topic1PubPathN]] ... ]
 // and subs -> [ [topicPath1, [topic1SubPath1...topic1SubPathN]] ... ]
-exports.listXubs = async (list = []) => {
+exports.listXubs = async (db, list = []) => {
 
   // get all topic pubs & subs from backend
   const topicXubs = await db.Vapor.topicXub.find().exec()
@@ -156,7 +155,7 @@ exports.listXubs = async (list = []) => {
 }
 
 // get list of pub/sub uris at given topic path
-exports.getXubUris = async (role, topicPath) => {
+exports.getXubUris = async (db, role, topicPath) => {
   const xubs = await db.Vapor.topicXub.find()
     .where('role').equals(role)
     .where('topicPath').equals(topicPath).exec()
@@ -169,7 +168,7 @@ exports.getXubUris = async (role, topicPath) => {
 }
 
 // resolves to list of deleted xubs
-exports.removeXub = async (role, xubUri, topicPath) => {
+exports.removeXub = async (db, role, xubUri, topicPath) => {
   const xubs = await db.Vapor.topicXub.find()
     .where('role').equals(role)
     .where('topicPath').equals(topicPath)
@@ -188,7 +187,7 @@ exports.removeXub = async (role, xubUri, topicPath) => {
 }
 
 // create new topic sub & write to backend
-exports.createXub = (role, topicPath, xubPath, xubUri, xubIpv4) => {
+exports.createXub = (db, role, topicPath, xubPath, xubUri, xubIpv4) => {
   return db.Vapor.topicXub.create({
     role: role,
     topicPath: topicPath,
@@ -199,10 +198,10 @@ exports.createXub = (role, topicPath, xubPath, xubUri, xubIpv4) => {
 }
 
 // update is asynchronous dont need to wait for promises to resolve
-exports.updateSubs = async (topicPath, subUris) => {
-  const pubUris = await exports.getXubUris('pub', topicPath)
+exports.updateSubs = async (db, topicPath, subUris) => {
+  const pubUris = await exports.getXubUris(db, 'pub', topicPath)
 
   for (const subUri of subUris) {
-    updateUtil.updateTopicSub(subUri, topicPath, pubUris)
+    updateUtil.updateTopicSub(db, subUri, topicPath, pubUris)
   }
 }

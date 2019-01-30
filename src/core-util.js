@@ -1,24 +1,23 @@
 'use strict'
 
-const db = require('./model-interface.js')
 const serviceUtil = require('./service-util.js')
 const topicUtil = require('./topic-util.js')
 const paramUtil = require('./param-util.js')
 const debug = require('debug')('vapor-master:core-util')
 
-exports.clean = async () => {
+exports.clean = async (db) => {
   const counts = await Promise.all([
-    exports.cleanRosnodes(),
-    serviceUtil.clean(),
-    topicUtil.clean(),
-    paramUtil.clean(),
+    exports.cleanRosnodes(db),
+    serviceUtil.clean(db),
+    topicUtil.clean(db),
+    paramUtil.clean(db),
   ])
 
   return counts.reduce((a, b) => a + b, 0)
 }
 
 // remove all rosnode docs & resolve to # removed
-exports.cleanRosnodes = async () => {
+exports.cleanRosnodes = async (db) => {
   const docs = await db.Vapor.rosnode.find().exec() // get all rosnodes
 
   const removed = []
@@ -28,7 +27,7 @@ exports.cleanRosnodes = async () => {
   return removed.length
 }
 
-exports.getByPath = async (path) => {
+exports.getByPath = async (db, path) => {
   if (!path) {
     return undefined
   }
@@ -45,7 +44,7 @@ exports.getByPath = async (path) => {
   return rosnodes[0]
 }
 
-exports.getByUri = async (uri) => {
+exports.getByUri = async (db, uri) => {
   if (!uri) {
     return undefined
   }
@@ -63,14 +62,14 @@ exports.getByUri = async (uri) => {
 }
 
 // attempt to find a rosnode by either path or uri
-exports.getByPathOrUri = async (path, uri) => {
+exports.getByPathOrUri = async (db, path, uri) => {
 
-  const rosnodeByPath = await exports.getByPath(path)
+  const rosnodeByPath = await exports.getByPath(db, path)
   if (rosnodeByPath) {
     return rosnodeByPath
   }
 
-  const rosnodeByUri = await exports.getByUri(uri)
+  const rosnodeByUri = await exports.getByUri(db, uri)
   if (rosnodeByUri) {
     return rosnodeByUri
   }
@@ -80,14 +79,14 @@ exports.getByPathOrUri = async (path, uri) => {
 
 // log method call to vapor master by a rosnode
 // if there is no record of rosnode with given path create it
-exports.logTouch = async (path, uri, ipv4) => {
+exports.logTouch = async (db, path, uri, ipv4) => {
   debug(`touched rosnode with path '${path}' from ip '${ipv4}'`)
 
   if (!(path || uri)) {
     throw new Error('need either path or uri to log touch!')
   }
 
-  let rosnode = await exports.getByPathOrUri(path, uri)
+  let rosnode = await exports.getByPathOrUri(db, path, uri)
 
   if (!rosnode) {
     rosnode = new db.Vapor.rosnode({})
@@ -109,7 +108,7 @@ exports.logTouch = async (path, uri, ipv4) => {
 }
 
 // log failure of rosnode to respond to xmlrpc call to given uri
-exports.logFail = async (uri, msg, error) => {
+exports.logFail = async (db, uri, msg, error) => {
   let failmsg = `FAIL: no response from node at uri '${uri}'`
   if (msg) { failmsg += ': ' + msg }
   if (error) {
@@ -120,7 +119,7 @@ exports.logFail = async (uri, msg, error) => {
   }
 
   // try to get record for node at uri, if it doesnt exist create it
-  const rosnode = await exports.getByUri(uri)
+  const rosnode = await exports.getByUri(db, uri)
     || new db.Vapor.rosnode({})
 
   // push fail event to rosnode doc & write to backend

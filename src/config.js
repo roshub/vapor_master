@@ -11,14 +11,15 @@ const sanitize = require('sanitize-filename')
 
 const logger = require('debug')('vapor-master:config');
 
-const DEFAULT_CONFIG = require('./default-config')
 var BASE_PATH = process.env.SNAP_COMMON || ((process.env.HOME) ? (process.env.HOME + '/.vapor-master') : '.' )
-
-
 
 class Config {
 
-  constructor(defaults){
+  constructor(defaults, whitelist){
+    this.whitelist = whitelist || [
+      'clean-db', 'db', 'dboptions', 'ROS_MASTER_URI', 'no-shutdown'
+    ]
+    defaults = defaults || {}
     this.basePath = defaults.basePath || BASE_PATH
     this.defaults = defaults || {}
     this.defaults.logicalSeparator = '.'
@@ -26,32 +27,50 @@ class Config {
 
   open () {
     this.touchDir('')
-
-    nconf.argv().env({logicalSeparator: '.'}).file({
-      file: 'config.json',
+    let file_name = 'config.json'
+    nconf.argv()
+    const config_file = nconf.get('config')
+    if (config_file){
+      const file_path = Path.parse(config_file)
+      file_name = file_path.base
+      if (!Path.isAbsolute(config_file)){
+        this.basePath = process.cwd() + '/' + file_path.dir
+      } else {
+        this.basePath = file_path.dir
+      }
+    }
+    nconf.file({
+      file: file_name,
       dir: this.basePath,
       search: true,
-      logicalSeparator: '.'
-    }).defaults(this.defaults)
+      logicalSeparator: '.', 
+    })
+    nconf.env({
+      logicalSeparator: '.', 
+      whitelist: this.whitelist,
+    })
 
-    logger(`config ready: ${this.basePath}/config.json`)
-
+    //logger(`config ready: ${this.basePath}${file_name}`)
     return this
   }
 
-  static config(defaults){
-    let c = new Config(defaults)
+  static config(defaults, whitelist){
+    let c = new Config(defaults, whitelist)
     c.open()
 
     return c
   }
 
+  readAll(){
+    return nconf.get();
+  }
+  
   // Read config file as json
   read(key){
     logger('reading path: ' + key)
     let val = nconf.get(key)
 
-    logger(key+ ' = ', val)    
+    //logger(key+ ' = ', val)    
 
     return val
   }
@@ -186,17 +205,6 @@ class Config {
   }
 }
 
-const CONFIG_KEY = Symbol.for("app.vapormaster.config")
-
-var globalSymbols = Object.getOwnPropertySymbols(global)
-var hasConfig = (globalSymbols.indexOf(CONFIG_KEY) > -1)
 
 
-if(!hasConfig){
-  var config = Config.config(DEFAULT_CONFIG)
-  global[CONFIG_KEY] = {
-    config: config
-  }
-}
-
-module.exports = global[CONFIG_KEY].config
+module.exports = Config
