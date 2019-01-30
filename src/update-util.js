@@ -46,10 +46,15 @@ exports.updateParamSub = (db, subUri, subPath, keyPath, value) => {
       // on thrown error or failed xmlrpc response log failure to backend
       if (error) {
         paramUtil.removeSub(db, keyPath, subPath, subUri);
+        const errorMsg = "" + error;
+        if (errorMsg.includes("ECONNREFUSED")){
+          debug("removed subscription to " + keyPath + " by " + subUri)
+          return Promise.resolve()
+        }
+        
         return coreUtil.logFail(db, 
           subUri, `error updating param '${keyPath}'`, error)
-      }
-      if (value[0] !== 1) { // 1 -> success code
+      } else if (value[0] !== 1) { // 1 -> success code
         return coreUtil.logFail(db, 
           subUri, `on param update subscriber responded: '${value[1]}'`)
       }
