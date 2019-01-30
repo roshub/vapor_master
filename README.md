@@ -122,7 +122,7 @@ To interactively develop run:
 yarn
 yarn watch
 ```
-# Tests
+## Tests
 
 To run tests, first run `catkin_make` in the `tests/native_client` folder, and then source the file `tests/native_client/devel/setup.bash`.
 
@@ -130,7 +130,7 @@ Then run:
 
 `yarn test`
 
-## Roadmap
+# Roadmap
 
  * Support snap configuration
  * Write Tutorials
@@ -144,7 +144,7 @@ Then run:
  * rosout leader election
  * Autostart via systemd on Ubuntu/debian
 
-## Further Reading
+# Further Reading
 
 * [Annoucement Blog Post](https://medium.com/roshub/introducing-vapor-a-high-availability-ros-1-x-master-19d66506cb7a)
 * [Wiki Page](http://wiki.ros.org/vapor_master)

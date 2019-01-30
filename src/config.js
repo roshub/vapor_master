@@ -50,7 +50,7 @@ class Config {
       whitelist: this.whitelist,
     })
 
-    logger(`config ready: ${this.basePath}${file_name}`)
+    //logger(`config ready: ${this.basePath}${file_name}`)
     return this
   }
 
