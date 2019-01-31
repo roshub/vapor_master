@@ -106,8 +106,8 @@ class Server {
 
       console.log("EXIT")
 
-      if(err && err.errno!='EADDRINUSE'){
-        console.error('error', err)
+      if(err){
+        console.error('error: ', err)
       }
       process.exit(1)
     })
