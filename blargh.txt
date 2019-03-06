@@ -156,9 +156,9 @@ status code is not 1: failed to find uri for node at path '/sub_node'
 
 
 SUMMARY
-[1;31m * RESULT: FAIL[0m
+ * RESULT: FAIL
  * TESTS: 15
  * ERRORS: 0
-[1;31m * FAILURES: 10[0m
+ * FAILURES: 10
 
 rostest log file is in /home/nick/.ros/log/rostest-nick-Precision-T1600-24092.log
