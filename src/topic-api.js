@@ -20,7 +20,7 @@ exports.registerSubscriber = async function(req, res) {
     topicUtil.logTouch(this.db, topicPath, topicType, req.ip),
 
     // create subscriber & get list of publisher uris
-    topicUtil.createXub(this.db, 'sub', topicPath, callerPath, callerUri, req.ip),
+    topicUtil.createXub(this.db, 'sub', topicPath, topicType, callerPath, callerUri, req.ip),
     topicUtil.getXubUris(this.db, 'pub', topicPath),
   ])
 
@@ -74,7 +74,7 @@ exports.registerPublisher = async function(req, res) {
     topicUtil.logTouch(this.db, topicPath, topicType, req.ip),
 
     // create publisher & get list of subscriber uris
-    topicUtil.createXub(this.db, 'pub', topicPath, callerPath, callerUri, req.ip),
+    topicUtil.createXub(this.db, 'pub', topicPath, topicType, callerPath, callerUri, req.ip),
     topicUtil.getXubUris(this.db, 'sub', topicPath),
   ])
 

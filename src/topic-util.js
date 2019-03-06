@@ -187,10 +187,11 @@ exports.removeXub = async (db, role, xubUri, topicPath) => {
 }
 
 // create new topic sub & write to backend
-exports.createXub = (db, role, topicPath, xubPath, xubUri, xubIpv4) => {
+exports.createXub = (db, role, topicPath, msgType, xubPath, xubUri, xubIpv4) => {
   return db.Vapor.topicXub.create({
     role: role,
     topicPath: topicPath,
+    msgType: msgType,
     xubPath: xubPath,
     xubUri: xubUri,
     xubIpv4: xubIpv4,
