@@ -1,4 +1,6 @@
 <launch>
   <master type="test_rosmaster" />
+
   <test test-name="test_rosmaster_registerPublisher_success" args="--regpubsuccess" pkg="test_rosmaster" type="test_master_api.py" />
+
 </launch>

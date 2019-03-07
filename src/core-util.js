@@ -31,11 +31,17 @@ exports.getByPath = async (db, path) => {
   if (!path) {
     return undefined
   }
-
-  const rosnodes = await db.Vapor.rosnode.find()
-    .where('rosnodePath').equals(path).exec()
-
+  let rosnodes;
+  debug("getByPath " + path)
+  try{
+    rosnodes = await db.Vapor.rosnode.find()
+      .where('rosnodePath').equals(path).exec()
+  }catch (error){
+    debug ("getByPath error!");
+    debug (error)
+  }
   if (rosnodes.length < 1) {
+    debug("no rosnode found with path " + path)
     return undefined
   }
   if (rosnodes.length > 1) {
@@ -48,11 +54,12 @@ exports.getByUri = async (db, uri) => {
   if (!uri) {
     return undefined
   }
-
+  debug("getByUri " + uri)
   const rosnodes = await db.Vapor.rosnode.find()
     .where('rosnodeUri').equals(uri).exec()
 
   if (rosnodes.length < 1) {
+    debug("no rosnode found with uri " + uri)
     return undefined
   }
   if (rosnodes.length > 1) {
@@ -63,7 +70,8 @@ exports.getByUri = async (db, uri) => {
 
 // attempt to find a rosnode by either path or uri
 exports.getByPathOrUri = async (db, path, uri) => {
-
+  debug("********************")
+  debug(`getbyPathorURI path: ${path} uri: ${uri}`)
   const rosnodeByPath = await exports.getByPath(db, path)
   if (rosnodeByPath) {
     return rosnodeByPath
@@ -98,13 +106,20 @@ exports.logTouch = async (db, path, uri, ipv4) => {
     rosnode.rosnodeUri = uri
   }
   if (ipv4) {
-    rosnode.touched = { ipv4, }
+    rosnode.touched = { ipv4: ipv4 }
     rosnode.failed = undefined
   } else {
     rosnode.touched = {} // Date.now() set by model
     rosnode.failed = undefined
   }
-  await rosnode.save()
+  try{
+    debug(rosnode)
+    await rosnode.save()
+  } catch (error){
+    debug("error saving node: ")
+    debug(rosnode)
+    debug(error)
+  }
 }
 
 // log failure of rosnode to respond to xmlrpc call to given uri
@@ -112,10 +127,10 @@ exports.logFail = async (db, uri, msg, error) => {
   let failmsg = `FAIL: no response from node at uri '${uri}'`
   if (msg) { failmsg += ': ' + msg }
   if (error) {
-    console.error(failmsg, error)
+    debug(failmsg, error)
     failmsg += ': ' + error.toString()
   } else {
-    console.log(failmsg)
+    debug(failmsg)
   }
 
   // try to get record for node at uri, if it doesnt exist create it

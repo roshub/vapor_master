@@ -93,8 +93,12 @@ exports.getPubsBySubpath = (db, subpath) => {
 // get list of [topicPath, msgType] pairs for topics with at least 1 pub
 exports.getPubPairs = (db, subpath) => {
   return exports.getPubsBySubpath(db, subpath)
-    .then(exports.getTopicsFromXubs)
-    .then(exports.getPairsFromTopics)
+    .then((xubs)=>{
+      return exports.getTopicsFromXubs(db, xubs)
+    })
+    .then((topics)=>{
+      return exports.getPairsFromTopics(db, topics)
+    })
 }
 
 // resolve from a list of xubs to a list of (unique) topics
@@ -127,7 +131,9 @@ exports.getPairsFromTopics = (db, topics = []) => {
 // resolves to a list of [topicPath, msgType] pairs for all topics
 exports.getAllPairs = (db) => {
   return db.Vapor.topic.find().exec()
-    .then(exports.getPairsFromTopics)
+    .then((topics)=>{
+      return exports.getPairsFromTopics(db, topics)
+    })
 }
 
 // (optionally) takes a list and appends publisher & subscriber lists

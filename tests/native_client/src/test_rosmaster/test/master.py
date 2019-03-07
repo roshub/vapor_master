@@ -308,7 +308,7 @@ class MasterApiTestCase(_MasterTestCase):
             self.assertEquals(caller_api, val)
             # - master knows topic type
             val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
-            self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
+            self.assert_([topic_name, topic_type] in val, "master does not know topic %s type %s : %s"%(topic_name, topic_type, val))
             #   - test new api as well
             val = self.apiSuccess(master.getTopicTypes(self.caller_id))
             self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)

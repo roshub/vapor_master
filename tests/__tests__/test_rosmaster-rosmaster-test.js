@@ -25,9 +25,9 @@ beforeAll(async ()=>{
 it('test_rosmaster rosmaster.test', async ()=>{
     let setParamReply = await nh.setParam('/test/joints', ['one', 'two'])
     expect(setParamReply).toEqual([1, 'param set at \'/test/joints\'', 0])
-    let output = null;
+    let output = null
     try {
-         output = await exec('rostest -r test_rosmaster rosmaster_registerPublisherinvalid.test',
+         output = await exec('rostest -r test_rosmaster rosmaster.test',
                         {env: execEnv})
     } catch (e) {
         //ignore the error code
@@ -50,7 +50,7 @@ it('test_rosmaster rosmaster.test', async ()=>{
     resultsString += "errors: " + testOutput.summary.errors + "\n"
     resultsString += "failures: " + testOutput.summary.failures + "\n"
 
-    if (testOutput.summary.result == "passed"){
+    if (testOutput.summary.result.match("SUCCESS")){
         console.log(resultsString)
     } else {
         console.error = saveConsoleError
