@@ -108,11 +108,9 @@ exports.unregisterPublisher = async function(req, res) {
       `'${callerUri}' unregistered as publisher for topic '${topicPath}'`,
       1,
     ], req, res)
-
-    // rospy master *sends success code but value 0* if uri isnt subscribed
   } else {
     return xmlrpc.sendResult([
-      1, // success code
+      -1, // failure code
       `'${callerUri}' not registered publisher for topic '${topicPath}'`,
       0, // follow rospy master
     ], req, res)

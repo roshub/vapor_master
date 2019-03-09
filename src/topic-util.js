@@ -52,6 +52,11 @@ exports.logTouch = async (db, topicPath, topicType, ipv4) => {
   }
   if (topicType && !topic.msgType) { // if msg type isnt set, set it now
     topic.msgType = topicType
+  } else if (topicType && topic.msgType){
+    if (topic.msgType == "*" && topicType != "*"){
+      debug("replacing topic " + topicPath + " type " + topic.msgType + " with type " + topicType)
+      topic.msgType = topicType
+    }
   }
   topic.touched = { ipv4, } // push touch, date.now set by model
   topic.failed = undefined

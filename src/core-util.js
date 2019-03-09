@@ -73,12 +73,24 @@ exports.getByPathOrUri = async (db, path, uri) => {
   debug("********************")
   debug(`getbyPathorURI path: ${path} uri: ${uri}`)
   const rosnodeByPath = await exports.getByPath(db, path)
+  
   if (rosnodeByPath) {
+    if (uri && rosnodeByPath.uri != uri){
+      debug("WARNING: rosnode found at path " + path + " does not match uri " 
+            + uri + ", shutting down that node...")
+      return undefined
+    }
     return rosnodeByPath
   }
 
   const rosnodeByUri = await exports.getByUri(db, uri)
   if (rosnodeByUri) {
+    if (path && rosnodeByUri.path != path){
+      debug("WARNING: rosnode found at uri " + uri + " does not match path "  
+            + path + ", shutting down that node...")
+      return undefined
+    }
+
     return rosnodeByUri
   }
 
@@ -94,6 +106,9 @@ exports.logTouch = async (db, path, uri, ipv4) => {
     throw new Error('need either path or uri to log touch!')
   }
 
+  if (path.match("sub_node")){
+    debug("sub_node")
+  }
   let rosnode = await exports.getByPathOrUri(db, path, uri)
 
   if (!rosnode) {
