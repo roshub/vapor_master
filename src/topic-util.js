@@ -158,7 +158,7 @@ exports.listXubs = async (db, list = []) => {
     if (!(xub.topicPath in map)) { map[xub.topicPath] = [] }
     map[xub.topicPath].push(xub.xubPath)
   }
-
+  
   // convert maps to lists, push into passed list & return
   list.push(Object.entries(pubmap))
   list.push(Object.entries(submap))
@@ -198,7 +198,29 @@ exports.removeXub = async (db, role, xubUri, topicPath) => {
 }
 
 // create new topic sub & write to backend
-exports.createXub = (db, role, topicPath, msgType, xubPath, xubUri, xubIpv4) => {
+exports.createXub = async (db, role, topicPath, msgType, xubPath, xubUri, xubIpv4) => {
+  const xubs = await db.Vapor.topicXub.find().exec()
+  debug("XUBS: ")
+  debug(xubs)
+  debug("thing to create: ")
+  debug({role,msgType,topicPath,xubPath,xubUri,xubIpv4})
+  let matches = xubs.filter((xub,i,arr)=>{
+    if (xub.role == role &&
+        xub.msgType == msgType &&
+        xub.topicPath == topicPath &&
+        xub.xubPath == xubPath &&
+        xub.xubUri == xubUri &&
+        xubIpv4 == xubIpv4){
+      return true
+    }
+    return false;
+  })
+  debug("*****MATCHES*****")
+  debug(matches)
+  
+  if (matches.length > 0){
+    return matches[0];
+  }
   return db.Vapor.topicXub.create({
     role: role,
     topicPath: topicPath,
