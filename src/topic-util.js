@@ -217,7 +217,7 @@ exports.createXub = async (db, role, topicPath, msgType, xubPath, xubUri, xubIpv
   })
   debug("*****MATCHES*****")
   debug(matches)
-  
+
   if (matches.length > 0){
     return matches[0];
   }

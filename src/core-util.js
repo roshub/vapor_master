@@ -72,29 +72,22 @@ exports.getByUri = async (db, uri) => {
 exports.getByPathOrUri = async (db, path, uri) => {
   debug("********************")
   debug(`getbyPathorURI path: ${path} uri: ${uri}`)
+
   const rosnodeByPath = await exports.getByPath(db, path)
-  
   if (rosnodeByPath) {
-    if (uri && rosnodeByPath.uri != uri){
-      debug("WARNING: rosnode found at path " + path + " does not match uri " 
-            + uri + ", shutting down that node...")
-      return undefined
-    }
     return rosnodeByPath
   }
 
   const rosnodeByUri = await exports.getByUri(db, uri)
   if (rosnodeByUri) {
-    if (path && rosnodeByUri.path != path){
-      debug("WARNING: rosnode found at uri " + uri + " does not match path "  
-            + path + ", shutting down that node...")
-      return undefined
-    }
-
     return rosnodeByUri
   }
 
   return undefined
+}
+
+exports.shutdownNode = async (db, path, uri) => {
+  
 }
 
 // log method call to vapor master by a rosnode
@@ -114,6 +107,17 @@ exports.logTouch = async (db, path, uri, ipv4) => {
   if (!rosnode) {
     rosnode = new db.Vapor.rosnode({})
   }
+  if (path && path == rosnode.rosnodePath && 
+    uri && rosnode.rosnodeUri && uri != rosnode.rosnodeUri){
+    debug("Shutting down previous node with duplicate path " + path);
+    //shutdown
+  }
+  if (uri && uri == rosnode.rosnodeUri && path && rosnode.rosnodePath
+      && path != rosnode.rosnodePath){
+    debug("WARNING: Clearing previous node with same uri...");
+    rosnode.rosnodePath = path
+  }
+
   if (path && !rosnode.rosnodePath) { // if path isnt set, set it
     rosnode.rosnodePath = path
   }
