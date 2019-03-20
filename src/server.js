@@ -47,7 +47,7 @@ class Server {
   }
 
 
-  async start(retry) {
+  async start() {
     debug('starting server')
     // parse uri string for server to listen at
     this.master.setUri(this.config.ROS_MASTER_URI)

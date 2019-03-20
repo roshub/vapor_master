@@ -87,7 +87,24 @@ exports.getByPathOrUri = async (db, path, uri) => {
 }
 
 exports.shutdownNode = async (db, path, uri) => {
+    // get xmlrpc client connection to subscriber uri
+    const client = xmlrpc.createClient(uri)
+
+    // publisherUpdate(caller_id, topic, publishers)
+    //  -> http://wiki.ros.org/ROS/Slave_API
+    client.methodCall('shutdown', ['/', 'shutdown'],
+      (error, value) => {
   
+        // on thrown error or failed xmlrpc response log failure to backend
+        if (error !== null) {
+          return coreUtil.logFail(db, 
+            subUri, `error updating topic '${topicPath}'`, error)
+        }
+  
+        debug(`updated sub '${subUri}' to topic '${topicPath}'`)
+        return "done"
+      }
+    )
 }
 
 // log method call to vapor master by a rosnode
@@ -110,7 +127,7 @@ exports.logTouch = async (db, path, uri, ipv4) => {
   if (path && path == rosnode.rosnodePath && 
     uri && rosnode.rosnodeUri && uri != rosnode.rosnodeUri){
     debug("Shutting down previous node with duplicate path " + path);
-    //shutdown
+    exports.shutdownNode(db, path, uri)
   }
   if (uri && uri == rosnode.rosnodeUri && path && rosnode.rosnodePath
       && path != rosnode.rosnodePath){

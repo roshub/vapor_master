@@ -161,7 +161,7 @@ class Config {
 
   rmDir(path){
     return new Promise((resolve, reject)=>{
-      let resolvedPath = this.basePath +'/'+ sanitize(Path.basename(path))
+      let resolvedPath = this.basePath + '/' + sanitize(Path.basename(path))
       logger('rmDir ' + resolvedPath)
       rimraf(resolvedPath, (err)=>{
         if(err){
@@ -176,7 +176,7 @@ class Config {
 
   rmFile(path){
     return new Promise((resolve, reject)=>{
-      let resolvedPath = this.basePath +'/'+ Path.dirname(path) + '/'+ sanitize(Path.basename(path))
+      let resolvedPath = this.basePath + '/' + Path.dirname(path) + '/'+ sanitize(Path.basename(path))
       logger('rmFile ' + resolvedPath)
       fs.unlink(resolvedPath, (err)=>{
         if(err){
