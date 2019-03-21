@@ -95,6 +95,11 @@ exports.getPubsBySubpath = (db, subpath) => {
   }
 }
 
+exports.getTopicXubsFromNodePath = async (db, nodePath) =>{
+  const topicsXubs = await db.Vapor.topicXub.find().where('xubPath').equals(nodePath);
+  return topicsXubs
+}
+
 // get list of [topicPath, msgType] pairs for topics with at least 1 pub
 exports.getPubPairs = (db, subpath) => {
   return exports.getPubsBySubpath(db, subpath)
@@ -200,10 +205,6 @@ exports.removeXub = async (db, role, xubUri, topicPath) => {
 // create new topic sub & write to backend
 exports.createXub = async (db, role, topicPath, msgType, xubPath, xubUri, xubIpv4) => {
   const xubs = await db.Vapor.topicXub.find().exec()
-  debug("XUBS: ")
-  debug(xubs)
-  debug("thing to create: ")
-  debug({role,msgType,topicPath,xubPath,xubUri,xubIpv4})
   let matches = xubs.filter((xub,i,arr)=>{
     if (xub.role == role &&
         xub.msgType == msgType &&
@@ -215,8 +216,6 @@ exports.createXub = async (db, role, topicPath, msgType, xubPath, xubUri, xubIpv
     }
     return false;
   })
-  debug("*****MATCHES*****")
-  debug(matches)
 
   if (matches.length > 0){
     return matches[0];

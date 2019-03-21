@@ -4,6 +4,7 @@ const serviceUtil = require('./service-util.js')
 const topicUtil = require('./topic-util.js')
 const paramUtil = require('./param-util.js')
 const debug = require('debug')('vapor-master:core-util')
+const xmlrpc = require('@roshub/express-xmlrpc')
 
 exports.clean = async (db) => {
   const counts = await Promise.all([
@@ -70,7 +71,6 @@ exports.getByUri = async (db, uri) => {
 
 // attempt to find a rosnode by either path or uri
 exports.getByPathOrUri = async (db, path, uri) => {
-  debug("********************")
   debug(`getbyPathorURI path: ${path} uri: ${uri}`)
 
   const rosnodeByPath = await exports.getByPath(db, path)
@@ -86,22 +86,24 @@ exports.getByPathOrUri = async (db, path, uri) => {
   return undefined
 }
 
-exports.shutdownNode = async (db, path, uri) => {
+//sends a message to client to shut down node
+exports.shutdownNode = async (db, uri, reason) => {
     // get xmlrpc client connection to subscriber uri
     const client = xmlrpc.createClient(uri)
 
     // publisherUpdate(caller_id, topic, publishers)
     //  -> http://wiki.ros.org/ROS/Slave_API
-    client.methodCall('shutdown', ['/', 'shutdown'],
+    client.methodCall('shutdown', ['/', reason],
       (error, value) => {
   
         // on thrown error or failed xmlrpc response log failure to backend
-        if (error !== null) {
-          return coreUtil.logFail(db, 
-            subUri, `error updating topic '${topicPath}'`, error)
+        if (error) {
+          debug(error)
+          return exports.logFail(db, 
+            uri, `error shutting down node at uri '${uri}'`, error)
         }
   
-        debug(`updated sub '${subUri}' to topic '${topicPath}'`)
+        debug(`Shutdown uri at '${uri}'`)
         return "done"
       }
     )
@@ -127,11 +129,12 @@ exports.logTouch = async (db, path, uri, ipv4) => {
   if (path && path == rosnode.rosnodePath && 
     uri && rosnode.rosnodeUri && uri != rosnode.rosnodeUri){
     debug("Shutting down previous node with duplicate path " + path);
-    exports.shutdownNode(db, path, uri)
+    await exports.shutdownNode(db, rosnode.rosnodeUri, "new node registered with same name")
+    rosnode.rosNodeUri = uri;
   }
   if (uri && uri == rosnode.rosnodeUri && path && rosnode.rosnodePath
       && path != rosnode.rosnodePath){
-    debug("WARNING: Clearing previous node with same uri...");
+    debug("*WARNING*: Clearing previous node at path "+path+" with same uri...");
     rosnode.rosnodePath = path
   }
 
@@ -149,7 +152,6 @@ exports.logTouch = async (db, path, uri, ipv4) => {
     rosnode.failed = undefined
   }
   try{
-    debug(rosnode)
     await rosnode.save()
   } catch (error){
     debug("error saving node: ")

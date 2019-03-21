@@ -37,6 +37,13 @@ exports.registerSubscriber = async function(req, res) {
 exports.unregisterSubscriber = async function(req, res) {
   const [ callerPath, topicPath, callerUri, ] = req.body.params
 
+  if (!callerPath || !topicPath || !callerUri){
+    return xmlrpc.sendResult([
+      -1, // error code
+      `Error: bad call arity`,
+      0,
+    ], req, res)
+  }
   const [ , , removed, ] = await Promise.all([
     coreUtil.logTouch(this.db, callerPath, callerUri, req.ip),
     topicUtil.logTouch(this.db, topicPath, null, req.ip),

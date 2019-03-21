@@ -57,7 +57,7 @@ class Server {
         await this.master.cleanDb()
       }
       await paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1")
-      await this.startListening(retry)
+      await this.startListening()
     } catch (err){
       console.log("EXIT")
       if(err){
@@ -68,13 +68,13 @@ class Server {
     return "started!";
   }
 
-  async startListening(retry){
+  async startListening(){
     return new Promise((resolve, reject)=>{
       try {
         this.server = this.app.listen(this.master.uri.port, this.master.uri.hostname, ()=>{  
           debug(`vapor master listening at '${this.master.uri.href}'`)
           this.server.removeAllListeners('error')
-          if(!retry){ return resolve() }
+          return resolve()
         })    
       } catch(err){
         console.log("EXIT")

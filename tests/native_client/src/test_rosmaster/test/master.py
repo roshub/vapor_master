@@ -372,6 +372,9 @@ class MasterApiTestCase(_MasterTestCase):
         caller_api = 'http://localhost:4567/' 
         topic_base = '/pub_topic'
 
+        #clean up previous "RegisterPublisherTypeSuccess" test, don't care about return value
+        master.unregisterPublisher(caller_id, '/type_test_pub_topic', caller_api)
+
         for i in range(0, 10):
             topic_name = "%s-%s"%(topic_base, i)
 

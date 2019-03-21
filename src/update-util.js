@@ -15,9 +15,9 @@ exports.updateTopicSub = (db, subUri, topicPath, pubUris) => {
   //  -> http://wiki.ros.org/ROS/Slave_API
   client.methodCall('publisherUpdate', ['/', topicPath, pubUris],
     (error, value) => {
-      
+
       // on thrown error or failed xmlrpc response log failure to backend
-      if (error !== null) {
+      if (error) {
         return coreUtil.logFail(db, 
           subUri, `error updating topic '${topicPath}'`, error)
       }
