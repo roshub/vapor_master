@@ -11,15 +11,19 @@ exports.hasParam = async function(req, res, next) {
   const [callerPath, keyPath] = req.body.params
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  const param = await paramUtil.get(this.db, keyPath)
-
+  const param = await paramUtil.get(this.db, callerPath, keyPath)
+  debug("HasParam gotten ")
+  debug(param)
   // test for leaf param (null | string | number | boolean | array)
-  const has = (param === null
+  let has = (param === null
                || typeof param === 'string'
                || typeof param === 'number'
                || typeof param === 'boolean'
                || Array.isArray(param))
 
+  if (typeof param === "object"){
+    has = true;
+  }
   debug(`hasParam('${keyPath}') -> ${has}`)
 
   return xmlrpc.sendResult([
@@ -37,7 +41,7 @@ exports.getParam = async function(req, res) {
   debug(keyPath)
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  const param = await paramUtil.get(this.db, keyPath)
+  const param = await paramUtil.get(this.db, callerPath, keyPath)
 
   // if no param found send error response (to follow rospy master)
   if (param === undefined) {
@@ -64,7 +68,7 @@ exports.getParam = async function(req, res) {
 //   -> (code, statusMessage, ignore)
 exports.setParam = async function(req, res) {
   const [callerPath, keyPath, value] = req.body.params
-  debug(`callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
+  debug(`setParam callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
 
   debug(req.body.params)
 
@@ -123,7 +127,7 @@ exports.subscribeParam = async function(req, res) {
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
   await paramUtil.createSub(this.db, keyPath, callerPath, callerUri, req.ip)
-  const param = await paramUtil.get(this.db, keyPath)
+  const param = await paramUtil.get(this.db, callerPath, keyPath)
 
   // return empty dict if no value found for param
   // spec -> http://wiki.ros.org/ROS/Parameter%20Server%20API
@@ -143,7 +147,7 @@ exports.unsubscribeParam = async function(req, res) {
 
   
   paramUtil.removeSub(this.db, keyPath, callerPath, callerUri)
-  const removed = await paramUtil.get(this.db, keyPath)
+  const removed = await paramUtil.get(this.db, callerPath, keyPath)
 
   
 

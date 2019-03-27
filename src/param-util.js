@@ -49,13 +49,34 @@ exports.getBySubpath = (db, subpath) => {
     .sort('created').where('keyPath').regex(re).exec()
 }
 
+//resolves parameter paths for local or private scope
+exports.resolvePath = (keyPath, callerPath) =>{
+  let path = keyPath
+  let re = /(\/.*)+\/.+[\/]?$/
+  
+  //resolves local scope (i.e. 'param1' at '/en/node' resolves to '/en/param1')
+  if (keyPath[0] != '/' && keyPath[0] != '~'){
+    const matches = callerPath.match(re)
+    if (!matches){
+      path = '/' + keyPath
+    } else {
+      path = matches[1] + '/' + keyPath
+    }
+  }
+  // assure key path has trailing slash
+  path = (path[path.length - 1] === '/') ? path : path + '/'
+
+  //resolves private scope
+  if (path[0] == '~'){
+    path = callerPath + '/' + path.substring(1,path.length)
+  }
+  return path;
+}
+
 // find all params matching subpath and load them into a dictionary
 // load oldest params first so that newer values overwrite older values
-exports.get = async (db, keyPath) => {
-
-  // assure key path has trailing slash
-  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
-
+exports.get = async (db, callerPath, keyPath) => {
+  const path = exports.resolvePath(keyPath, callerPath);
   // get path steps without leading & trailing empty spaces from slashes
   const steps = path.split('/').slice(1, -1)
 
@@ -243,9 +264,8 @@ exports.setByKey = (db, keyPath, value, creatorPath, creatorIpv4) => {
 //   -> Param{ keyPath: '/foot/left/sock', value: 'green', ..}
 exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
 
-  
-  // assure key path has trailing slash
-  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
+  const path = exports.resolvePath(keyPath, creatorPath);
+
   debug('set ' + keyPath)
   // null, strings, numbers & booleans can be leaf values
   if (value === null
@@ -254,7 +274,13 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
       || typeof value === 'boolean') {
 
     debug('set typeof value is ', typeof value)
-
+    const params = await exports.getBySubpath(db, path);
+    //clobber path
+    if (params && params){
+      for (let param of params){
+        await param.remove()
+      }  
+    }
     await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
 
   // for object make recursive call for each [subkey, subvalue] pair
@@ -262,10 +288,16 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
 
     if(Array.isArray(value)){
       debug('set typeof value is array')
+      const params = await exports.getBySubpath(db, path);
+      //clobber path
+      if (params){
+        for (let param of params){
+          await param.remove()
+        }  
+      }
       await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
     }
     else{
-      debug('set typeof value is object')
       // make recursive call for each subkey & await completion in parallel
       const calls = []
 
