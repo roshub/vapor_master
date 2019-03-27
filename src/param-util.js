@@ -56,11 +56,10 @@ exports.resolvePath = (keyPath, callerPath) =>{
   
   //resolves local scope (i.e. 'param1' at '/en/node' resolves to '/en/param1')
   if (keyPath[0] != '/' && keyPath[0] != '~'){
+    path = '/' + keyPath
     const matches = callerPath.match(re)
-    if (!matches){
-      path = '/' + keyPath
-    } else {
-      path = matches[1] + '/' + keyPath
+    if (matches) {
+      path = matches[1] + path
     }
   }
   // assure key path has trailing slash
@@ -160,8 +159,8 @@ exports.removeSub = async (db, keyPath, subPath, subUri) => {
   return Promise.all(removed) // resolve parallel backend removes
 }
 
-exports.removeByKey = async (db, keyPath) => {
-  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
+exports.removeByKey = async (db, callerPath, keyPath) => {
+  const path = exports.resolvePath(callerPath, keyPath)
 
   const params = await db.Vapor.param.find()
     .where('keyPath').equals(path).exec()
@@ -279,7 +278,7 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
     if (params && params){
       for (let param of params){
         await param.remove()
-      }  
+      }
     }
     await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
 
@@ -293,20 +292,31 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
       if (params){
         for (let param of params){
           await param.remove()
-        }  
+        }
       }
       await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
-    }
-    else{
-      // make recursive call for each subkey & await completion in parallel
-      const calls = []
+    } else {
+      //if object is empty dictionary, just clobber the path
+      if (Object.keys(value).length === 0){
+        debug("param set to empty dictionary!")
+        const params = await exports.getBySubpath(db, path)
+        //clobber path
+        if (params){
+          for (let param of params){
+            await param.remove()
+          }
+        }
+        await exports.setByKey(db, path, null, creatorPath, creatorIpv4)
+      } else {
+        // make recursive call for each subkey & await completion in parallel
+        const calls = []
 
-      for (let [ subkey, subvalue, ] of Object.entries(value)) {
+        for (let [ subkey, subvalue, ] of Object.entries(value)) {
 
-        calls.push( exports.set(db, path + subkey, subvalue, creatorPath, creatorIpv4) )
+          calls.push( exports.set(db, path + subkey, subvalue, creatorPath, creatorIpv4) )
+        }
+        await Promise.all(calls)
       }
-
-      await Promise.all(calls)
     }
 
   } else {

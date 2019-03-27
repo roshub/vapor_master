@@ -118,9 +118,6 @@ exports.logTouch = async (db, path, uri, ipv4) => {
     throw new Error('need either path or uri to log touch!')
   }
 
-  if (path.match("sub_node")){
-    debug("sub_node")
-  }
   let rosnode = await exports.getByPathOrUri(db, path, uri)
 
   if (!rosnode) {

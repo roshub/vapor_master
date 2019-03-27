@@ -26,8 +26,12 @@ exports.registerService = async function(req, res) {
 //   -> (code, statusMessage, numUnregistered)
 exports.unregisterService = async function(req, res) {
   const [callerPath, servicePath, serviceUri] = req.body.params
+  let path = "/"
   if (!callerPath || !servicePath || !serviceUri){
-    coreUtil.logTouch(this.db, callerPath, null, req.ip)
+    if (callerPath){
+      path = callerPath
+    }
+    coreUtil.logTouch(this.db, path, null, req.ip)
     return xmlrpc.sendResult([
       -1, // error code
       `Error: bad call arity`,

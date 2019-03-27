@@ -91,7 +91,7 @@ exports.deleteParam = async function(req, res) {
   const [callerPath, keyPath] = req.body.params
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  const removed = await paramUtil.removeByKey(this.db, keyPath)
+  const removed = await paramUtil.removeByKey(this.db, callerPath, keyPath)
 
   // rospy implementation returns 1 on successful deletion & -1 if not set
   if (removed.length > 0) {
@@ -145,11 +145,8 @@ exports.subscribeParam = async function(req, res) {
 exports.unsubscribeParam = async function(req, res) {
   const [callerPath, callerUri, keyPath] = req.body.params
 
-  
   paramUtil.removeSub(this.db, keyPath, callerPath, callerUri)
   const removed = await paramUtil.get(this.db, callerPath, keyPath)
-
-  
 
   return xmlrpc.sendResult([
     1, // success code
