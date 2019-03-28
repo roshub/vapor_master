@@ -1,5 +1,0 @@
-<launch>
-  <test test-name="test_rosmaster_registerPublisher_success" args="--regpubsuccess" pkg="test_rosmaster" type="test_master_api.py" />
-  <test test-name="test_rosmaster_registerPublisher_types" args="--regpubtypes" pkg="test_rosmaster" type="test_master_api.py" />
-  <test test-name="test_rosmaster_unregisterPublisher_success" args="--unregpubsuccess" pkg="test_rosmaster" type="test_master_api.py" />
-</launch>

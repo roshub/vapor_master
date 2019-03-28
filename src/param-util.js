@@ -49,33 +49,13 @@ exports.getBySubpath = (db, subpath) => {
     .sort('created').where('keyPath').regex(re).exec()
 }
 
-//resolves parameter paths for local or private scope
-exports.resolvePath = (keyPath, callerPath) =>{
-  let path = keyPath
-  let re = /(\/.*)+\/.+[\/]?$/
-  
-  //resolves local scope (i.e. 'param1' at '/en/node' resolves to '/en/param1')
-  if (keyPath[0] != '/' && keyPath[0] != '~'){
-    path = '/' + keyPath
-    const matches = callerPath.match(re)
-    if (matches) {
-      path = matches[1] + path
-    }
-  }
-  // assure key path has trailing slash
-  path = (path[path.length - 1] === '/') ? path : path + '/'
-
-  //resolves private scope
-  if (path[0] == '~'){
-    path = callerPath + '/' + path.substring(1,path.length)
-  }
-  return path;
-}
-
 // find all params matching subpath and load them into a dictionary
 // load oldest params first so that newer values overwrite older values
-exports.get = async (db, callerPath, keyPath) => {
-  const path = exports.resolvePath(keyPath, callerPath);
+exports.get = async (db, keyPath) => {
+
+  // assure key path has trailing slash
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
+
   // get path steps without leading & trailing empty spaces from slashes
   const steps = path.split('/').slice(1, -1)
 
@@ -159,8 +139,8 @@ exports.removeSub = async (db, keyPath, subPath, subUri) => {
   return Promise.all(removed) // resolve parallel backend removes
 }
 
-exports.removeByKey = async (db, callerPath, keyPath) => {
-  const path = exports.resolvePath(keyPath, callerPath)
+exports.removeByKey = async (db, keyPath) => {
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
 
   const params = await db.Vapor.param.find()
     .where('keyPath').equals(path).exec()
@@ -263,8 +243,9 @@ exports.setByKey = (db, keyPath, value, creatorPath, creatorIpv4) => {
 //   -> Param{ keyPath: '/foot/left/sock', value: 'green', ..}
 exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
 
-  const path = exports.resolvePath(keyPath, creatorPath);
-
+  
+  // assure key path has trailing slash
+  const path = (keyPath[keyPath.length - 1] === '/') ? keyPath : keyPath + '/'
   debug('set ' + keyPath)
   // null, strings, numbers & booleans can be leaf values
   if (value === null
@@ -273,13 +254,7 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
       || typeof value === 'boolean') {
 
     debug('set typeof value is ', typeof value)
-    const params = await exports.getBySubpath(db, path);
-    //clobber path
-    if (params && params){
-      for (let param of params){
-        await param.remove()
-      }
-    }
+
     await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
 
   // for object make recursive call for each [subkey, subvalue] pair
@@ -287,36 +262,19 @@ exports.set = async (db, keyPath, value, creatorPath, creatorIpv4) => {
 
     if(Array.isArray(value)){
       debug('set typeof value is array')
-      const params = await exports.getBySubpath(db, path);
-      //clobber path
-      if (params){
-        for (let param of params){
-          await param.remove()
-        }
-      }
       await exports.setByKey(db, path, value, creatorPath, creatorIpv4)
-    } else {
-      //if object is empty dictionary, just clobber the path
-      if (Object.keys(value).length === 0){
-        debug("param set to empty dictionary!")
-        const params = await exports.getBySubpath(db, path)
-        //clobber path
-        if (params){
-          for (let param of params){
-            await param.remove()
-          }
-        }
-        await exports.setByKey(db, path, null, creatorPath, creatorIpv4)
-      } else {
-        // make recursive call for each subkey & await completion in parallel
-        const calls = []
+    }
+    else{
+      debug('set typeof value is object')
+      // make recursive call for each subkey & await completion in parallel
+      const calls = []
 
-        for (let [ subkey, subvalue, ] of Object.entries(value)) {
+      for (let [ subkey, subvalue, ] of Object.entries(value)) {
 
-          calls.push( exports.set(db, path + subkey, subvalue, creatorPath, creatorIpv4) )
-        }
-        await Promise.all(calls)
+        calls.push( exports.set(db, path + subkey, subvalue, creatorPath, creatorIpv4) )
       }
+
+      await Promise.all(calls)
     }
 
   } else {

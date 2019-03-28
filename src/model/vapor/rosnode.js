@@ -13,6 +13,7 @@ const rosnode = new mongoose.Schema({
     ipv4: {
       type: String,
       index: true,
+      required: true,
       match: validate.ipv4Re,
     },
   },
@@ -40,16 +41,5 @@ const rosnode = new mongoose.Schema({
     match: validate.uriRe,
   },
 })
-rosnode.post('validation', function (doc, next){
-  if (doc.touched && doc.failed){
-    next(new Error("Validation: cannot have both touched and failed fields in vapor_rosnode"))
-  } else if (!(doc.touched || doc.failed)){
-    next(new Error("Validation: must have either touched or failed field in vapor_rosnode"))
-  } else if (doc.touched && !doc.touched.ipv4){
-    next(new Error("Validation: must have ipv4 field in touched filed in vapor_rosnode"))
-  } else {
-    next();
-  }
-});
 
 module.exports = rosnode

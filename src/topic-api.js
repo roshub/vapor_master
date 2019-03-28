@@ -20,7 +20,7 @@ exports.registerSubscriber = async function(req, res) {
     topicUtil.logTouch(this.db, topicPath, topicType, req.ip),
 
     // create subscriber & get list of publisher uris
-    topicUtil.createXub(this.db, 'sub', topicPath, topicType, callerPath, callerUri, req.ip),
+    topicUtil.createXub(this.db, 'sub', topicPath, callerPath, callerUri, req.ip),
     topicUtil.getXubUris(this.db, 'pub', topicPath),
   ])
 
@@ -37,13 +37,6 @@ exports.registerSubscriber = async function(req, res) {
 exports.unregisterSubscriber = async function(req, res) {
   const [ callerPath, topicPath, callerUri, ] = req.body.params
 
-  if (!callerPath || !topicPath || !callerUri){
-    return xmlrpc.sendResult([
-      -1, // error code
-      `Error: bad call arity`,
-      0,
-    ], req, res)
-  }
   const [ , , removed, ] = await Promise.all([
     coreUtil.logTouch(this.db, callerPath, callerUri, req.ip),
     topicUtil.logTouch(this.db, topicPath, null, req.ip),
@@ -81,7 +74,7 @@ exports.registerPublisher = async function(req, res) {
     topicUtil.logTouch(this.db, topicPath, topicType, req.ip),
 
     // create publisher & get list of subscriber uris
-    topicUtil.createXub(this.db, 'pub', topicPath, topicType, callerPath, callerUri, req.ip),
+    topicUtil.createXub(this.db, 'pub', topicPath, callerPath, callerUri, req.ip),
     topicUtil.getXubUris(this.db, 'sub', topicPath),
   ])
 
@@ -115,9 +108,11 @@ exports.unregisterPublisher = async function(req, res) {
       `'${callerUri}' unregistered as publisher for topic '${topicPath}'`,
       1,
     ], req, res)
+
+    // rospy master *sends success code but value 0* if uri isnt subscribed
   } else {
     return xmlrpc.sendResult([
-      -1, // failure code
+      1, // success code
       `'${callerUri}' not registered publisher for topic '${topicPath}'`,
       0, // follow rospy master
     ], req, res)

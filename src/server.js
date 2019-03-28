@@ -47,45 +47,74 @@ class Server {
   }
 
 
-  async start() {
+  async start(retry) {
+
     debug('starting server')
+    let promises = []
+
     // parse uri string for server to listen at
     this.master.setUri(this.config.ROS_MASTER_URI)
-    try {
-      await this.master.start();
-      if (this.config['clean-db']) {
-        await this.master.cleanDb()
+
+    // if clean database flag is set clear all data from db
+    if (this.config['clean-db']) {
+      this.master.cleanDb().then(()=>{
+        // set run_id
+        paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1")
+      })
+    }
+    else{
+      // set run_id
+      promises.push( paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1") )
+    }
+
+    
+
+    let serverStart = new Promise((resolve,reject)=>{
+
+
+      this.server = this.app.listen(this.master.uri.port, this.master.uri.hostname, ()=>{
+        //debug('server listening')
+        //debug('address', this.server.address())
+        clearTimeout(this.errorHandlerTimer)
+        this.errorHandlerTimer = null
+
+
+        debug(`vapor master listening at '${this.master.uri.href}'`)
+        this.server.removeAllListeners('error')
+
+        let dbPromise = this.master.start();
+
+        if(!retry){ return resolve(dbPromise) }
+      })
+
+      if(retry){ 
+        // retry after errors
+        this.server.on('error', this.handleServerErrorRetry.bind(this))
+        return resolve()
       }
-      await paramUtil.set(this.master.db, "/run_id", uuidv1(), "/", "127.0.0.1")
-      await this.startListening()
-    } catch (err){
+      else {
+        // stop after errors
+        const errorHandler = async (error)=>{
+          debug('CRITICAL', JSON.stringify(error))
+          await this.stop()
+          reject(error)
+        }
+
+        this.server.on('error', errorHandler)
+      }
+    }).catch((err)=>{
+
       console.log("EXIT")
+
       if(err){
         console.error('error: ', err)
       }
       process.exit(1)
-    }
-    return "started!";
-  }
+    })
 
-  async startListening(){
-    return new Promise((resolve, reject)=>{
-      try {
-        this.server = this.app.listen(this.master.uri.port, this.master.uri.hostname, ()=>{  
-          debug(`vapor master listening at '${this.master.uri.href}'`)
-          this.server.removeAllListeners('error')
-          return resolve()
-        })    
-      } catch(err){
-        console.log("EXIT")
+    promises.push(serverStart)
 
-        if(err){
-          console.error('error: ', err)
-        }
-        process.exit(1)
-    
-      }
-    });
+    return Promise.all(promises)
   }
 
   async stop() {

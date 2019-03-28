@@ -4,7 +4,6 @@ const serviceUtil = require('./service-util.js')
 const topicUtil = require('./topic-util.js')
 const paramUtil = require('./param-util.js')
 const debug = require('debug')('vapor-master:core-util')
-const xmlrpc = require('@roshub/express-xmlrpc')
 
 exports.clean = async (db) => {
   const counts = await Promise.all([
@@ -32,17 +31,11 @@ exports.getByPath = async (db, path) => {
   if (!path) {
     return undefined
   }
-  let rosnodes;
-  debug("getByPath " + path)
-  try{
-    rosnodes = await db.Vapor.rosnode.find()
-      .where('rosnodePath').equals(path).exec()
-  }catch (error){
-    debug ("getByPath error!");
-    debug (error)
-  }
+
+  const rosnodes = await db.Vapor.rosnode.find()
+    .where('rosnodePath').equals(path).exec()
+
   if (rosnodes.length < 1) {
-    debug("no rosnode found with path " + path)
     return undefined
   }
   if (rosnodes.length > 1) {
@@ -55,12 +48,11 @@ exports.getByUri = async (db, uri) => {
   if (!uri) {
     return undefined
   }
-  debug("getByUri " + uri)
+
   const rosnodes = await db.Vapor.rosnode.find()
     .where('rosnodeUri').equals(uri).exec()
 
   if (rosnodes.length < 1) {
-    debug("no rosnode found with uri " + uri)
     return undefined
   }
   if (rosnodes.length > 1) {
@@ -71,7 +63,6 @@ exports.getByUri = async (db, uri) => {
 
 // attempt to find a rosnode by either path or uri
 exports.getByPathOrUri = async (db, path, uri) => {
-  debug(`getbyPathorURI path: ${path} uri: ${uri}`)
 
   const rosnodeByPath = await exports.getByPath(db, path)
   if (rosnodeByPath) {
@@ -84,29 +75,6 @@ exports.getByPathOrUri = async (db, path, uri) => {
   }
 
   return undefined
-}
-
-//sends a message to client to shut down node
-exports.shutdownNode = async (db, uri, reason) => {
-    // get xmlrpc client connection to subscriber uri
-    const client = xmlrpc.createClient(uri)
-
-    // publisherUpdate(caller_id, topic, publishers)
-    //  -> http://wiki.ros.org/ROS/Slave_API
-    client.methodCall('shutdown', ['/', reason],
-      (error, value) => {
-  
-        // on thrown error or failed xmlrpc response log failure to backend
-        if (error) {
-          debug(error)
-          return exports.logFail(db, 
-            uri, `error shutting down node at uri '${uri}'`, error)
-        }
-  
-        debug(`Shutdown uri at '${uri}'`)
-        return "done"
-      }
-    )
 }
 
 // log method call to vapor master by a rosnode
@@ -123,18 +91,6 @@ exports.logTouch = async (db, path, uri, ipv4) => {
   if (!rosnode) {
     rosnode = new db.Vapor.rosnode({})
   }
-  if (path && path == rosnode.rosnodePath && 
-    uri && rosnode.rosnodeUri && uri != rosnode.rosnodeUri){
-    debug("Shutting down previous node with duplicate path " + path);
-    await exports.shutdownNode(db, rosnode.rosnodeUri, "new node registered with same name")
-    rosnode.rosNodeUri = uri;
-  }
-  if (uri && uri == rosnode.rosnodeUri && path && rosnode.rosnodePath
-      && path != rosnode.rosnodePath){
-    debug("*WARNING*: Clearing previous node at path "+path+" with same uri...");
-    rosnode.rosnodePath = path
-  }
-
   if (path && !rosnode.rosnodePath) { // if path isnt set, set it
     rosnode.rosnodePath = path
   }
@@ -142,19 +98,13 @@ exports.logTouch = async (db, path, uri, ipv4) => {
     rosnode.rosnodeUri = uri
   }
   if (ipv4) {
-    rosnode.touched = { ipv4: ipv4 }
+    rosnode.touched = { ipv4, }
     rosnode.failed = undefined
   } else {
     rosnode.touched = {} // Date.now() set by model
     rosnode.failed = undefined
   }
-  try{
-    await rosnode.save()
-  } catch (error){
-    debug("error saving node: ")
-    debug(rosnode)
-    debug(error)
-  }
+  await rosnode.save()
 }
 
 // log failure of rosnode to respond to xmlrpc call to given uri
@@ -162,10 +112,10 @@ exports.logFail = async (db, uri, msg, error) => {
   let failmsg = `FAIL: no response from node at uri '${uri}'`
   if (msg) { failmsg += ': ' + msg }
   if (error) {
-    debug(failmsg, error)
+    console.error(failmsg, error)
     failmsg += ': ' + error.toString()
   } else {
-    debug(failmsg)
+    console.log(failmsg)
   }
 
   // try to get record for node at uri, if it doesnt exist create it

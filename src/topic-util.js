@@ -52,11 +52,6 @@ exports.logTouch = async (db, topicPath, topicType, ipv4) => {
   }
   if (topicType && !topic.msgType) { // if msg type isnt set, set it now
     topic.msgType = topicType
-  } else if (topicType && topic.msgType){
-    if (topic.msgType == "*" && topicType != "*"){
-      debug("replacing topic " + topicPath + " type " + topic.msgType + " with type " + topicType)
-      topic.msgType = topicType
-    }
   }
   topic.touched = { ipv4, } // push touch, date.now set by model
   topic.failed = undefined
@@ -95,20 +90,11 @@ exports.getPubsBySubpath = (db, subpath) => {
   }
 }
 
-exports.getTopicXubsFromNodePath = async (db, nodePath) =>{
-  const topicsXubs = await db.Vapor.topicXub.find().where('xubPath').equals(nodePath);
-  return topicsXubs
-}
-
 // get list of [topicPath, msgType] pairs for topics with at least 1 pub
 exports.getPubPairs = (db, subpath) => {
   return exports.getPubsBySubpath(db, subpath)
-    .then((xubs)=>{
-      return exports.getTopicsFromXubs(db, xubs)
-    })
-    .then((topics)=>{
-      return exports.getPairsFromTopics(db, topics)
-    })
+    .then(exports.getTopicsFromXubs)
+    .then(exports.getPairsFromTopics)
 }
 
 // resolve from a list of xubs to a list of (unique) topics
@@ -141,9 +127,7 @@ exports.getPairsFromTopics = (db, topics = []) => {
 // resolves to a list of [topicPath, msgType] pairs for all topics
 exports.getAllPairs = (db) => {
   return db.Vapor.topic.find().exec()
-    .then((topics)=>{
-      return exports.getPairsFromTopics(db, topics)
-    })
+    .then(exports.getPairsFromTopics)
 }
 
 // (optionally) takes a list and appends publisher & subscriber lists
@@ -163,7 +147,7 @@ exports.listXubs = async (db, list = []) => {
     if (!(xub.topicPath in map)) { map[xub.topicPath] = [] }
     map[xub.topicPath].push(xub.xubPath)
   }
-  
+
   // convert maps to lists, push into passed list & return
   list.push(Object.entries(pubmap))
   list.push(Object.entries(submap))
@@ -203,27 +187,10 @@ exports.removeXub = async (db, role, xubUri, topicPath) => {
 }
 
 // create new topic sub & write to backend
-exports.createXub = async (db, role, topicPath, msgType, xubPath, xubUri, xubIpv4) => {
-  const xubs = await db.Vapor.topicXub.find().exec()
-  let matches = xubs.filter((xub,i,arr)=>{
-    if (xub.role == role &&
-        xub.msgType == msgType &&
-        xub.topicPath == topicPath &&
-        xub.xubPath == xubPath &&
-        xub.xubUri == xubUri &&
-        xubIpv4 == xubIpv4){
-      return true
-    }
-    return false;
-  })
-
-  if (matches.length > 0){
-    return matches[0];
-  }
+exports.createXub = (db, role, topicPath, xubPath, xubUri, xubIpv4) => {
   return db.Vapor.topicXub.create({
     role: role,
     topicPath: topicPath,
-    msgType: msgType,
     xubPath: xubPath,
     xubUri: xubUri,
     xubIpv4: xubIpv4,

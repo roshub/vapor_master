@@ -17,7 +17,7 @@ exports.updateTopicSub = (db, subUri, topicPath, pubUris) => {
     (error, value) => {
 
       // on thrown error or failed xmlrpc response log failure to backend
-      if (error) {
+      if (error !== null) {
         return coreUtil.logFail(db, 
           subUri, `error updating topic '${topicPath}'`, error)
       }

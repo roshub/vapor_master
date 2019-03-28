@@ -14,10 +14,6 @@ exports.clean = async (db) => {
   await Promise.all(removed) // wait for remove operations to resolve
   return removed.length // return # removed
 }
-exports.getProsFromNodePath = async(db, nodePath) =>{
-  const Pros = await db.Vapor.servicePro.find().where('providerPath').equals(nodePath).exec()
-  return Pros;
-}
 
 // takes (optional) list and appends sublist of services
 // returns promise that resolves to [(..listcontents,) services]
@@ -38,22 +34,7 @@ exports.listPros = async (db, list = []) => {
 }
 
 // returns promise resolving to new service provider
-exports.createPro = async (db, servicePath, serviceUri, proPath, proUri, proIpv4) => {
-  const pros = await db.Vapor.servicePro.find().exec()
-  let matches = pros.filter((pro,i,arr)=>{
-    if (pro.servicePath == servicePath &&
-        pro.serviceUri == serviceUri &&
-        pro.providerPath == proPath &&
-        pro.providerUri == proUri &&
-        pro.providerIpv4 == proIpv4){
-      return true
-    }
-    return false;
-  })
-
-  if (matches.length > 0){
-    return matches[0];
-  }
+exports.createPro = (db, servicePath, serviceUri, proPath, proUri, proIpv4) => {
   return db.Vapor.servicePro.create({
     servicePath: servicePath,
     serviceUri: serviceUri,

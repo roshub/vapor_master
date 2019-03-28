@@ -1,3 +1,0 @@
-<launch>
-  <test test-name="test_rosmaster_registerSubscriber_invalid" args="--regsubinvalid" pkg="test_rosmaster" type="test_master_api.py" />
-</launch>

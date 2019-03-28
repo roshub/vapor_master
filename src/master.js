@@ -46,7 +46,7 @@ class Master {
 
   // error handler for xmlrpc router catches errors & sends ros error message
   onError(error, req, res, next){
-    debug(`error handling method call: '${req.body.method}':`, error)
+    console.error(`error handling method call: '${req.body.method}':`, error)
 
     // send ros error message
     res.send(xmlrpc.serializeResponse([
@@ -60,7 +60,7 @@ class Master {
 
   // miss handler for xmlrpc router sends ros error message for unknown methods
   onMiss(req, res) {
-    debug(`fail! unrecognized method call: '${req.body.method}'`)
+    console.error(`fail! unrecognized method call: '${req.body.method}'`)
 
     // send ros error message
     res.send(xmlrpc.serializeResponse([

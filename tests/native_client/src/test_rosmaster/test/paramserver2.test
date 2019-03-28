@@ -1,3 +1,0 @@
-<launch>
-  <test test-name="param_set_param" pkg="test_rosmaster" type="test_ps_set_param.py" />
-</launch>

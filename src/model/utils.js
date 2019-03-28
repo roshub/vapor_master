@@ -20,7 +20,7 @@ exports.uriRe = [
 ]
 exports.maxPackage = 256
 exports.packageRe = [
-  /^\w+\/\w+$|^\*$/,
+  /^\w+\/\w+$/,
   'package type format -> \'std_msgs/String\'',
 ]
 

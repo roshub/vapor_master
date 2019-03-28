@@ -11,19 +11,15 @@ exports.hasParam = async function(req, res, next) {
   const [callerPath, keyPath] = req.body.params
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  const param = await paramUtil.get(this.db, callerPath, keyPath)
-  debug("HasParam gotten ")
-  debug(param)
+  const param = await paramUtil.get(this.db, keyPath)
+
   // test for leaf param (null | string | number | boolean | array)
-  let has = (param === null
+  const has = (param === null
                || typeof param === 'string'
                || typeof param === 'number'
                || typeof param === 'boolean'
                || Array.isArray(param))
 
-  if (typeof param === "object"){
-    has = true;
-  }
   debug(`hasParam('${keyPath}') -> ${has}`)
 
   return xmlrpc.sendResult([
@@ -41,7 +37,7 @@ exports.getParam = async function(req, res) {
   debug(keyPath)
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  const param = await paramUtil.get(this.db, callerPath, keyPath)
+  const param = await paramUtil.get(this.db, keyPath)
 
   // if no param found send error response (to follow rospy master)
   if (param === undefined) {
@@ -68,7 +64,7 @@ exports.getParam = async function(req, res) {
 //   -> (code, statusMessage, ignore)
 exports.setParam = async function(req, res) {
   const [callerPath, keyPath, value] = req.body.params
-  debug(`setParam callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
+  debug(`callerpath ${callerPath}  keyPath ${keyPath} value ${value}`)
 
   debug(req.body.params)
 
@@ -91,7 +87,7 @@ exports.deleteParam = async function(req, res) {
   const [callerPath, keyPath] = req.body.params
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
-  const removed = await paramUtil.removeByKey(this.db, callerPath, keyPath)
+  const removed = await paramUtil.removeByKey(this.db, keyPath)
 
   // rospy implementation returns 1 on successful deletion & -1 if not set
   if (removed.length > 0) {
@@ -127,7 +123,7 @@ exports.subscribeParam = async function(req, res) {
 
   // await coreUtil.logTouch(this.db, callerPath, null, req.ip)
   await paramUtil.createSub(this.db, keyPath, callerPath, callerUri, req.ip)
-  const param = await paramUtil.get(this.db, callerPath, keyPath)
+  const param = await paramUtil.get(this.db, keyPath)
 
   // return empty dict if no value found for param
   // spec -> http://wiki.ros.org/ROS/Parameter%20Server%20API
@@ -145,8 +141,11 @@ exports.subscribeParam = async function(req, res) {
 exports.unsubscribeParam = async function(req, res) {
   const [callerPath, callerUri, keyPath] = req.body.params
 
+  
   paramUtil.removeSub(this.db, keyPath, callerPath, callerUri)
-  const removed = await paramUtil.get(this.db, callerPath, keyPath)
+  const removed = await paramUtil.get(this.db, keyPath)
+
+  
 
   return xmlrpc.sendResult([
     1, // success code

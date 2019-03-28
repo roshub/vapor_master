@@ -10,9 +10,11 @@ const debug = require('debug') ('vapor-master:service-api')
 exports.registerService = async function(req, res) {
   const [callerPath, servicePath, serviceUri, callerUri] = req.body.params
 
-  await coreUtil.logTouch(this.db, callerPath, callerUri, req.ip) // creates node if new
-  await serviceUtil.createPro(this.db, 
-      servicePath, serviceUri, callerPath, callerUri, req.ip)
+  await Promise.all([
+    coreUtil.logTouch(this.db, callerPath, callerUri, req.ip), // creates node if new
+    serviceUtil.createPro(this.db, 
+      servicePath, serviceUri, callerPath, callerUri, req.ip),
+  ])
 
   // if create provider call didnt throw error registration succeeded
   return xmlrpc.sendResult([
@@ -26,25 +28,16 @@ exports.registerService = async function(req, res) {
 //   -> (code, statusMessage, numUnregistered)
 exports.unregisterService = async function(req, res) {
   const [callerPath, servicePath, serviceUri] = req.body.params
-  let path = "/"
-  if (!callerPath || !servicePath || !serviceUri){
-    if (callerPath){
-      path = callerPath
-    }
-    coreUtil.logTouch(this.db, path, null, req.ip)
-    return xmlrpc.sendResult([
-      -1, // error code
-      `Error: bad call arity`,
-      0,
-    ], req, res)
-  }
-  await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+
+  const [, removed] = await Promise.all([
+    coreUtil.logTouch(this.db, callerPath, null, req.ip),
 
     // removePro resolves to list of removed service providers
     //
     // rospy master does something more complex also referencing
     // the caller path, but there should only be one provider at a given uri
-  const removed  = await serviceUtil.removePro(this.db, servicePath, serviceUri)
+    serviceUtil.removePro(this.db, servicePath, serviceUri),
+  ])
 
   if (removed.length > 0) {
     return xmlrpc.sendResult([
