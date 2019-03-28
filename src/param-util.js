@@ -160,7 +160,7 @@ exports.removeSub = async (db, keyPath, subPath, subUri) => {
 }
 
 exports.removeByKey = async (db, callerPath, keyPath) => {
-  const path = exports.resolvePath(callerPath, keyPath)
+  const path = exports.resolvePath(keyPath, callerPath)
 
   const params = await db.Vapor.param.find()
     .where('keyPath').equals(path).exec()
