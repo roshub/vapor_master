@@ -21,6 +21,13 @@ const topicXub = new mongoose.Schema({
     maxlength: validate.maxPath,
     match: validate.pathRe,
   },
+  msgType: {
+    type: String,
+    index: true,
+    required: true,
+    maxlength: validate.maxPackage,
+    match: validate.packageRe,
+  },
   xubPath: {
     type: String,
     index: true,

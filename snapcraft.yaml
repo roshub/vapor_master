@@ -1,5 +1,5 @@
 name: vapor-master
-version: '0.4'
+version: '0.5'
 grade: stable
 confinement: strict
 summary: RosHub Vapor Master

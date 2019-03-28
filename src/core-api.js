@@ -17,22 +17,27 @@ exports.lookupNode = async function(req, res) {
   // getByPath & logTouch calls would be in race condition
   // -> await logTouch before calling getByPath
   await coreUtil.logTouch(this.db, callerPath, null, req.ip)
+  debug("looking up node at path " + nodePath)
   const rosnode = await coreUtil.getByPath(this.db, nodePath)
 
   if (rosnode && rosnode.rosnodeUri) {
-    return xmlrpc.sendResult([
-      1, // success code
-      'found node uri',
-      rosnode.rosnodeUri,
-    ], req, res)
-
-  } else {
-    return xmlrpc.sendResult([
-      -1, // rospy master sends error code
-      `failed to find uri for node at path '${nodePath}'`,
-      '', // rospy master sends empty string
-    ], req, res)
-  }
+    const topics = await topicUtil.getTopicXubsFromNodePath(this.db, rosnode.rosnodePath)
+    const services = await serviceUtil.getProsFromNodePath(this.db, rosnode.rosnodePath)
+    if (topics.length > 0 || services.length > 0){
+      debug("found rosnode at path " + nodePath)
+      return xmlrpc.sendResult([
+        1, // success code
+        'found node uri',
+        rosnode.rosnodeUri,
+      ], req, res)  
+    }
+  } 
+  debug("Could not find active rosnode at path " + nodePath)
+  return xmlrpc.sendResult([
+    -1, // rospy master sends error code
+    `failed to find uri for node at path '${nodePath}'`,
+    '', // rospy master sends empty string
+  ], req, res)
 }
 
 // shutdown(caller_id, msg)
