@@ -1,6 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package vapor_master
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+0.5.0 (2019-03-27)
+-----------
+* Bug fixes
+* Contributors: Nick Zatkovich
 
 0.3.0 (2019-01-22)
 -----------
