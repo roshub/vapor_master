@@ -53,7 +53,7 @@ You can manually start vapor for:
 
 You can debug by seting the `DEBUG` environment variable:
 
-* `DEUBG=* snap run vapor-master`
+* `DEBUG=* snap run vapor-master`
 
 All command line flags are accessible via the snap as well:
 
